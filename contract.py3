@@ -1,7 +1,8 @@
 import json
 
 def import_ast():
-    json_data = json.load(open("coin_test.json"))
+    """Takes the .json produced by Truffle and extracts just the ast""" 
+    json_data = json.load(open("contracts/Token.json"))
     ast = json_data["ast"]
     return ast
 
