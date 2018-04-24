@@ -1,16 +1,17 @@
 import random 
 
 depth = 3
+not_probability = 0.2
 
-gen_true = [{"left_expr" : True, "predicate" : " and ", "right_expr" : True}, 
-            {"left_expr" : True, "predicate" : " or ", "right_expr" : True},
-            {"left_expr" : True, "predicate" : " or ", "right_expr" : False},
-            {"left_expr" : False, "predicate" : " or ", "right_expr" : True}]
+true_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : True}, 
+                 {"left_expr" : True, "predicate" : " or ", "right_expr" : True},
+                 {"left_expr" : True, "predicate" : " or ", "right_expr" : False},
+                 {"left_expr" : False, "predicate" : " or ", "right_expr" : True}]
 
-gen_false = [{"left_expr" : True, "predicate" : " and ", "right_expr" : False}, 
-            {"left_expr" : False, "predicate" : " and ", "right_expr" : True},
-            {"left_expr" : False, "predicate" : " and ", "right_expr" : False},
-            {"left_expr" : False, "predicate" : " or ", "right_expr" : False}]
+false_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : False}, 
+                  {"left_expr" : False, "predicate" : " and ", "right_expr" : True},
+                  {"left_expr" : False, "predicate" : " and ", "right_expr" : False},
+                  {"left_expr" : False, "predicate" : " or ", "right_expr" : False}]
 
 def gen_tautology():
     expr = ""
@@ -33,15 +34,29 @@ def gen_expr(bvalue, depth):
 
     #check what the final value of the expression should be
     if(bvalue):
-        #generate true
-        true_expr = random.choice(gen_true)
-        expr = gen_expr(true_expr["left_expr"], depth) + true_expr["predicate"] + gen_expr(true_expr["right_expr"], depth)
+        expr = gen_true(depth)
     else:
-        # generate false
-        false_expr = random.choice(gen_false)
-        expr = gen_expr(false_expr["left_expr"], depth) + false_expr["predicate"] + gen_expr(false_expr["right_expr"], depth)
+        expr = gen_false(depth)
 
-    return "(" + expr + ")"
+    return expr
+
+def gen_true(depth):
+    if (decision(not_probability)):
+        true_expr = random.choice(true_variants)
+        expr = gen_expr(true_expr["left_expr"], depth) + true_expr["predicate"] + gen_expr(true_expr["right_expr"], depth)
+        return "(" + expr + ")"
+    else:
+        false_expr = gen_false(depth - 1)
+        return " (not " + false_expr + ")"
+
+def gen_false(depth):
+    if (decision(not_probability)):
+        false_expr = random.choice(false_variants)
+        expr = gen_expr(false_expr["left_expr"], depth) + false_expr["predicate"] + gen_expr(false_expr["right_expr"], depth)
+        return "(" + expr + ")"
+    else:
+        true_expr = gen_true(depth - 1)
+        return " (not " + true_expr + ")"
 
 def decision(prob):
     """generate something wih a certain probability"""
@@ -50,14 +65,16 @@ def decision(prob):
 def do_tests():
     true_pass = True
     false_pass = True
+    num_expr = 500
+    depth = 10
 
     print("Testing true statements")
-    for i in range(500):
-        expr = gen_expr(True, 10)
+    for i in range(num_expr):
+        expr = gen_expr(True, depth)
         res = eval(expr)
 
         if(res == False):
-            print ("Error in False at {0}".format(i))
+            print ("Error in True at {0}".format(i))
             true_pass = False
 
     if(true_pass):
@@ -66,8 +83,8 @@ def do_tests():
         print ("True tests NOT passed")
 
     print("Testing true statements")
-    for i in range(500):
-        expr = gen_expr(False, 10)
+    for i in range(num_expr):
+        expr = gen_expr(False, depth)
         res = eval(expr)
 
         if(res != False):
@@ -82,7 +99,9 @@ def do_tests():
 
 def main():
     #do_tests()
-    print(gen_tautology())
+    expr = gen_tautology();
+    print(expr)
+    # print(eval(expr))
 
 if __name__ == "__main__":
     main()
