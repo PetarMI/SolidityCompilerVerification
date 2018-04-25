@@ -1,5 +1,6 @@
 import random
 
+# initialize all variables
 symbols_str = ['<', '>', '>=', '<=']
 symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y),
            "<=": (lambda x, y: x <= y)}
@@ -17,6 +18,7 @@ def decision(prob):
 
 
 def gen_tautology(bool, tot_depth, expr):
+    '''recursively generates tautology consisting of inequalities'''
     tot_depth -= 1
     depth = random.randint(1, 3)
 
@@ -29,8 +31,7 @@ def gen_tautology(bool, tot_depth, expr):
         expr += gen_tautology(bool, tot_depth, expr)
         return expr
     else:
-        #print(eval("True" + expr))
-        return "" #gen_inequality(bool, depth)
+        return ""
 
 
 def gen_eq():
@@ -55,8 +56,7 @@ def gen_eq():
 
 
 def gen_inequality(bool, depth):
-    expr = []
-
+    '''generates the inequality itself'''
     while depth > 0:
         depth -= 1
         eq1, val_eq1 = gen_eq()
