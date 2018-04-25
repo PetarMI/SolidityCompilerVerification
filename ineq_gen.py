@@ -3,18 +3,12 @@ import random
 class Ineq_Generator():
     # Class to generate random inequalities
 
-    def __init__(self,symbols_str, symbols, ops_str, expr, nums, nums_length):
+    def __init__(self,symbols_str, symbols, ops_str, nums, nums_length):
         self.symbols_str = symbols_str
         self.symbols = symbols
         self.ops_str=  ops_str
-        self.expr = expr
         self.nums = nums
         self.nums_length = nums_length
-
-    def decision(self, prob):
-        """generate something wih a certain probability"""
-        return (random.random() > prob)
-
 
     def gen_tautology(self, bool, tot_depth, expr):
         '''recursively generates tautology consisting of inequalities'''
@@ -73,24 +67,26 @@ class Ineq_Generator():
                 else:
                     return eq1 + " " + symbol + " " + eq2
 
-    def asdcall_this(self):
-        self.gen_tautology(True, 4, "")
-        print(eval("True" + self.expr))
 
-def main():
+def decision(prob):
+        """generate something wih a certain probability"""
+        return (random.random() > prob)
+
+def run_generator():
     symbols_str = ['<', '>', '>=', '<=']
     symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y), "<=": (lambda x, y: x <= y)}
     ops_str = ['+', '-', '/', '*']
-    expr = ""
     nums = []
     for i in range(10):
         nums.append(random.uniform(-100, 100))
     l = len(nums)
 
-    generator  = Ineq_Generator(symbols_str, symbols, ops_str, expr, nums, l)
-    generator.gen_tautology(False, 4, "")
-    print(eval("False" + generator.expr))
-
-
-if __name__ == "__main__":
-    main()
+    generator  = Ineq_Generator(symbols_str, symbols, ops_str, nums, l)
+    if decision(0.5):
+        expr = generator.gen_tautology(True, 4, "")
+        print(expr)
+        print(eval("True" + expr))
+    else:
+        expr = generator.gen_tautology(False, 4, "")
+        print(expr)
+        print(eval("False" + expr))
