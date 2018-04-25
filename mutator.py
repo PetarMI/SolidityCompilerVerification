@@ -50,14 +50,11 @@ def parse_sources(sources):
 
     return parsed_sources
 
-def main():
+def do_mutation(sources):
     #hardcoding the lines we got from contract.py for now
-    sources = parse_sources(["553:20:0", "698:29:0"])
+    sources = parse_sources(sources)
     mutants = 0
 
     while (mutants < 3):
         if(mutate("contracts/coin_test.sol", sources, mutants)):
             mutants += 1
-
-if __name__ == "__main__":
-    main()

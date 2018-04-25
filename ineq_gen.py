@@ -1,80 +1,96 @@
 import random
 
-# initialize all variables
-symbols_str = ['<', '>', '>=', '<=']
-symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y),
-           "<=": (lambda x, y: x <= y)}
-ops_str = ['+', '-', '/', '*']
-expr = ""
-nums = []
+class Ineq_Generator():
+    # Class to generate random inequalities
 
-for i in range(10):
-    nums.append(random.uniform(-100, 100))
-l = len(nums)
+    def __init__(self,symbols_str, symbols, ops_str, expr, nums, nums_length):
+        self.symbols_str = symbols_str
+        self.symbols = symbols
+        self.ops_str=  ops_str
+        self.expr = expr
+        self.nums = nums
+        self.nums_length = nums_length
 
-def decision(prob):
-    """generate something wih a certain probability"""
-    return (random.random() > prob)
-
-
-def gen_tautology(bool, tot_depth, expr):
-    '''recursively generates tautology consisting of inequalities'''
-    tot_depth -= 1
-    depth = random.randint(1, 3)
-
-    if (bool):
-        expr += " and " + " ( " + gen_inequality(bool, depth) + " ) "
-    else:
-        expr += " or " + " ( " + gen_inequality(bool, depth) + " ) "
-
-    if tot_depth > 0:
-        expr += gen_tautology(bool, tot_depth, expr)
-        return expr
-    else:
-        return ""
+    def decision(self, prob):
+        """generate something wih a certain probability"""
+        return (random.random() > prob)
 
 
-def gen_eq():
-    '''generate an equation using one of the ops'''
-    eq = ""
-    eq_depth = random.randint(1, 3)
-    first = 1
+    def gen_tautology(self, bool, tot_depth, expr):
+        '''recursively generates tautology consisting of inequalities'''
+        tot_depth -= 1
+        depth = random.randint(1, 3)
 
-    while eq_depth > 0:
-        eq_depth -= 1
-        num1 = nums[random.randint(0, l - 1)]
-        num2 = nums[random.randint(0, l - 1)]
-
-        if first:
-            eq += str(num1) + " " + ops_str[random.randint(0, 3)] + " " + str(num2)
-            first -= 1
+        if (bool):
+            expr += " and " + " ( " + self.gen_inequality(bool, depth) + " ) "
         else:
-            eq += " " + ops_str[random.randint(0, 3)] + " " + str(num1) + " " + ops_str[
-                random.randint(0, 3)] + " " + str(num2)
-    val = eval(eq)
-    return eq, val
+            expr += " or " + " ( " + self.gen_inequality(bool, depth) + " ) "
 
-
-def gen_inequality(bool, depth):
-    '''generates the inequality itself'''
-    while depth > 0:
-        depth -= 1
-        eq1, val_eq1 = gen_eq()
-        eq2, val_eq2 = gen_eq()
-        symbol = symbols_str[random.randint(0, 3)]
-        res = symbols[symbol](val_eq1, val_eq2)
-        if bool:
-            if res:
-                return eq1 + " " + symbol + " " + eq2
-            else:
-                return eq2 + " " + symbol + " " + eq1
+        if tot_depth > 0:
+            expr += self.gen_tautology(bool, tot_depth, expr)
+            return expr
         else:
-            if res:
-                return eq2 + " " + symbol + " " + eq1
+            return ""
+
+
+    def gen_eq(self):
+        '''generate an equation using one of the ops'''
+        eq = ""
+        eq_depth = random.randint(1, 3)
+        first = 1
+
+        while eq_depth > 0:
+            eq_depth -= 1
+            num1 = self.nums[random.randint(0, self.nums_length - 1)]
+            num2 = self.nums[random.randint(0, self.nums_length - 1)]
+
+            if first:
+                eq += str(num1) + " " + self.ops_str[random.randint(0, 3)] + " " + str(num2)
+                first -= 1
             else:
-                return eq1 + " " + symbol + " " + eq2
+                eq += " " + self.ops_str[random.randint(0, 3)] + " " + str(num1) + " " + self.ops_str[
+                    random.randint(0, 3)] + " " + str(num2)
+        val = eval(eq)
+        return eq, val
 
-def call_this():
-    gen_tautology(True, 4, "")
-    print(eval("True" + expr))
 
+    def gen_inequality(self, bool, depth):
+        '''generates the inequality itself'''
+        while depth > 0:
+            depth -= 1
+            eq1, val_eq1 = self.gen_eq()
+            eq2, val_eq2 = self.gen_eq()
+            symbol = self.symbols_str[random.randint(0, 3)]
+            res = self.symbols[symbol](val_eq1, val_eq2)
+            if bool:
+                if res:
+                    return eq1 + " " + symbol + " " + eq2
+                else:
+                    return eq2 + " " + symbol + " " + eq1
+            else:
+                if res:
+                    return eq2 + " " + symbol + " " + eq1
+                else:
+                    return eq1 + " " + symbol + " " + eq2
+
+    def asdcall_this(self):
+        self.gen_tautology(True, 4, "")
+        print(eval("True" + self.expr))
+
+def main():
+    symbols_str = ['<', '>', '>=', '<=']
+    symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y), "<=": (lambda x, y: x <= y)}
+    ops_str = ['+', '-', '/', '*']
+    expr = ""
+    nums = []
+    for i in range(10):
+        nums.append(random.uniform(-100, 100))
+    l = len(nums)
+
+    generator  = Ineq_Generator(symbols_str, symbols, ops_str, expr, nums, l)
+    generator.gen_tautology(False, 4, "")
+    print(eval("False" + generator.expr))
+
+
+if __name__ == "__main__":
+    main()

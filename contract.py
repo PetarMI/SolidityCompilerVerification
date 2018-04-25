@@ -1,8 +1,9 @@
 import json
 
+
 def import_ast():
-    """Takes the .json produced by Truffle and extracts just the ast""" 
-    json_data = json.load(open("contracts/Token.json"))
+    """Takes the .json produced by Truffle and extracts just the ast"""
+    json_data = json.load(open("contracts/coin_test.json"))
     ast = json_data["ast"]
     return ast
 
@@ -69,7 +70,7 @@ def get_sources(statements):
 
     return sources
 
-def main():
+def run_contract():
     ast = import_ast()
     contract = find_contract_defs(ast)
     functions = find_contract_funcs(contract)
@@ -77,6 +78,4 @@ def main():
     sources = get_sources(if_statements)
 
     print(sources)
-
-if __name__ == "__main__":
-    main()
+    return sources
