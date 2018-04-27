@@ -96,12 +96,8 @@ def do_tests():
     else: 
         print ("False tests NOT passed")
 
-
-def main():
+def run_generator():
     #do_tests()
     expr = gen_tautology();
     print(expr)
-    # print(eval(expr))
-
-if __name__ == "__main__":
-    main()
+    print(eval(expr[4:]))

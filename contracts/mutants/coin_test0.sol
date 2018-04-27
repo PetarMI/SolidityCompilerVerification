@@ -17,12 +17,12 @@ contract Coin {
     }
 
     function mint(address receiver, uint amount) public {
-        if (msg.sender != minter) return;
+        if (msg.sender != minter or  (not  (not (False and True)))) return;
         balances[receiver] += amount;
     }
 
     function send(address receiver, uint amount) public {
-        if (balances[msg.sender] < amount && (1 == 1)) return;
+        if (balances[msg.sender] < amount) return;
         balances[msg.sender] -= amount;
         balances[receiver] += amount;
         emit Sent(msg.sender, receiver, amount);

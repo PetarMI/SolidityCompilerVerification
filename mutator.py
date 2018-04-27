@@ -1,10 +1,16 @@
 import random
+import tautology_generator as tgen
 
-def mutate(fname, sources, n):
+contract_dir = "contracts/"
+mutants_dir = contract_dir + "mutants/"
+contract_extension = ".sol"
+
+def mutate(seed_contract, sources, n):
     mutated = False
     mutated_contract = ""
+    seed_path = contract_dir + seed_contract + contract_extension
 
-    with open(fname) as f:
+    with open(seed_path) as f:
         for src in sources:
             offset = src[0]
             length = src[1]
@@ -21,40 +27,29 @@ def mutate(fname, sources, n):
         mutated_contract += f.read()
 
     if (mutated):
-        write_mutant(mutated_contract, n)
+        write_mutant(mutated_contract, seed_contract, n)
         return True
     else:
         return False
 
-def write_mutant(mutant, n):
-    mutant_name = "contracts/mutants/coin_test{0}.sol".format(n)
+def write_mutant(mutant, seed_contract, n):
+    mutant_name = mutants_dir + seed_contract + str(n) + contract_extension
 
     with open(mutant_name, 'w') as f:
         f.write(mutant)
 
 def gen_tautology():
-    """the simplest tautology"""
-    return " && (1 == 1)"
+    """External function
+    Generate the tautology we will insert in the if condition"""
+    return tgen.gen_tautology()
 
 def decision():
     """mutate every line with 66% probability"""
     return random.random() > 0.33
 
-#TODO sort them
-def parse_sources(sources):
-    parsed_sources = []
-
-    for src in sources:
-        split_source = src.split(":")
-        parsed_sources.append([int(split_source[0]), int(split_source[1])])
-
-    return parsed_sources
-
-def do_mutation(sources):
-    #hardcoding the lines we got from contract.py for now
-    sources = parse_sources(sources)
+def do_mutation(seed_contract, sources):
     mutants = 0
 
     while (mutants < 3):
-        if(mutate("contracts/coin_test.sol", sources, mutants)):
+        if(mutate(seed_contract, sources, mutants)):
             mutants += 1
