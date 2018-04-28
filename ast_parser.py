@@ -1,4 +1,8 @@
 
+""" This is a script containing fucntions used only by the ast_walker
+    The point is simply to parse statements (ifs, variables, etc) that the walker finds
+    and put them in a format in which we can do the mutations later on """
+
 # TODO add support for floats and all uint types
 supported_types = {
   "t_bool" : "bool",
