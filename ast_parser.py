@@ -62,6 +62,7 @@ def parse_composite_types(var, var_type):
     var_info = {}
 
     if (var_type == "array"):
+        # walk the tree to find the necessary info for an array declaration node
         raw_inner_type = var["typeName"]["baseType"]["typeDescriptions"]["typeIdentifier"]
         inner_type = infer_type(raw_inner_type)
 
@@ -71,6 +72,7 @@ def parse_composite_types(var, var_type):
             return None
 
     elif (var_type == "mapping"):
+        # walk the tree to find the necessary info for a mapping declaration node
         raw_key_type = var["typeName"]["keyType"]["typeDescriptions"]["typeIdentifier"]
         raw_val_type = var["typeName"]["valueType"]["typeDescriptions"]["typeIdentifier"]
 
