@@ -1,8 +1,9 @@
 import json
+import ast_parser as ap
 
 contract_dir = "contracts/"
 ast_extension = ".json"
-test_file = "coin_test"
+test_file = "Coin"
 
 def import_ast(ast_file):
     """Takes the .json produced by Truffle and extracts just the ast"""
@@ -45,6 +46,18 @@ def find_contract_funcs(contract):
     else:
         raise ValueError("No functions in contract.")
 
+def find_global_vars(contract):
+    vars = []
+
+    for node in contract:
+        if (node["nodeType"] == "VariableDeclaration"):
+            var = ap.parse_variable(node)
+            # did we recognize the type
+            if(var != None):
+                vars.append(var)
+
+    return vars
+
 def find_ifs(functions):
     """Find all if statements inside a contract.
 
@@ -72,18 +85,15 @@ def get_sources(statements):
             # condition is an attibute of the ast -> get the condition of the if statement
             sources.append(ifstat["condition"]["src"])
 
-    return parse_sources(sources)
+    return ap.parse_sources(sources)
 
-#TODO sort them
-def parse_sources(sources):
-    """Return each source as a pair of offset and block length"""
-    parsed_sources = []
-
-    for src in sources:
-        split_source = src.split(":")
-        parsed_sources.append([int(split_source[0]), int(split_source[1])])
-
-    return parsed_sources
+def pretty_print_vars(vars):
+    for var in vars:
+        for k, v in var.items():
+            if(k == "name"):
+                print(k + " " + v)
+            else:
+                print("\t" + k + " " + v)
 
 def run_ast_walker(ast_file):
     """Parameter: Just the base name of the ast we are exploring"""
@@ -91,9 +101,10 @@ def run_ast_walker(ast_file):
     contract = find_contract_defs(ast)
     functions = find_contract_funcs(contract)
     if_statements = find_ifs(functions)
-    sources = get_sources(if_statements)
+    if_sources = get_sources(if_statements)
 
-    print(sources)
-    return sources
+    g_vars = find_global_vars(contract)
+    # pretty_print_vars(g_vars)
 
-# run_ast_walker()
+    return if_sources, g_vars
+
