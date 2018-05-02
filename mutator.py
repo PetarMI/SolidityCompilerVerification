@@ -1,5 +1,5 @@
 import random
-import tautology_generator as tgen
+import tautology_generator as t_gen
 
 contract_dir = "contracts/"
 mutants_dir = contract_dir + "mutants/"

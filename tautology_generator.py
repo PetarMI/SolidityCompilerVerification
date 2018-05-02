@@ -1,72 +1,89 @@
 import random 
 
-depth = 3
-not_probability = 0.2
-variables = []
+class Tautology_Generator():
 
-true_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : True}, 
-                 {"left_expr" : True, "predicate" : " or ", "right_expr" : True},
-                 {"left_expr" : True, "predicate" : " or ", "right_expr" : False},
-                 {"left_expr" : False, "predicate" : " or ", "right_expr" : True}]
+    not_probability = 0.2
 
-false_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : False}, 
-                  {"left_expr" : False, "predicate" : " and ", "right_expr" : True},
-                  {"left_expr" : False, "predicate" : " and ", "right_expr" : False},
-                  {"left_expr" : False, "predicate" : " or ", "right_expr" : False}]
+    leafs = { True : ["{0} or True", "True or {0}"],
+              False : ["{0} and False", "False and {0}"] }
 
-def gen_tautology(variables):
-    expr = ""
+    true_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : True}, 
+                     {"left_expr" : True, "predicate" : " or ", "right_expr" : True},
+                     {"left_expr" : True, "predicate" : " or ", "right_expr" : False},
+                     {"left_expr" : False, "predicate" : " or ", "right_expr" : True}]
 
-    # pick whether the outermost predicate is a logical AND or OR
-    if(decision(0.5)):
-        expr = " and " + gen_expr(True, depth)
-    else:
-        expr = " or " + gen_expr(False, depth)
+    false_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : False}, 
+                      {"left_expr" : False, "predicate" : " and ", "right_expr" : True},
+                      {"left_expr" : False, "predicate" : " and ", "right_expr" : False},
+                      {"left_expr" : False, "predicate" : " or ", "right_expr" : False}]
 
-    return expr
+    def __init__(self, scope_vars, expr_depth):
+        self.variables = scope_vars
+        self.depth = expr_depth
 
-def gen_expr(bvalue, depth):
-    expr = ""
+    def gen_tautology(self):
+        expr = ""
 
-    # we reached the max depth - return a leaf
-    if(depth < 1 or decision(0.9)):
-        return str(bvalue)
+        # pick whether the outermost predicate is a logical AND or OR
+        if(decision(0.5)):
+            expr = " and " + self.gen_expr(True, self.depth)
+        else:
+            expr = " or " + self.gen_expr(False, self.depth)
 
-    depth -= 1
+        return expr
 
-    #check what the final value of the expression should be
-    if(bvalue):
-        expr = gen_true(depth)
-    else:
-        expr = gen_false(depth)
+    def gen_expr(self, bvalue, depth):
+        expr = ""
 
-    return expr
+        # we reached the max depth - return a leaf
+        if(depth < 1 or decision(0.9)):
+            return self.gen_leaf(bvalue)
 
-def gen_true(depth):
-    if (decision(not_probability)):
-        true_expr = random.choice(true_variants)
-        expr = gen_expr(true_expr["left_expr"], depth) + true_expr["predicate"] + gen_expr(true_expr["right_expr"], depth)
-        return "(" + expr + ")"
-    else:
-        false_expr = gen_false(depth - 1)
-        return " (not " + false_expr + ")"
+        depth -= 1
 
-def gen_false(depth):
-    if (decision(not_probability)):
-        false_expr = random.choice(false_variants)
-        expr = gen_expr(false_expr["left_expr"], depth) + false_expr["predicate"] + gen_expr(false_expr["right_expr"], depth)
-        return "(" + expr + ")"
-    else:
-        true_expr = gen_true(depth - 1)
-        return " (not " + true_expr + ")"
+        #check what the final value of the expression should be
+        if(bvalue):
+            expr = self.gen_true(depth)
+        else:
+            expr = self.gen_false(depth)
+
+        return expr
+
+    def gen_true(self, depth):
+        if (decision(self.not_probability)):
+            true_expr = random.choice(self.true_variants)
+            expr = self.gen_expr(
+                true_expr["left_expr"], depth) + true_expr["predicate"] + self.gen_expr(true_expr["right_expr"], depth)
+            return "(" + expr + ")"
+        else:
+            false_expr = self.gen_false(depth - 1)
+            return " (not " + false_expr + ")"
+
+    def gen_false(self, depth):
+        if (decision(self.not_probability)):
+            false_expr = random.choice(self.false_variants)
+            expr = self.gen_expr(
+                false_expr["left_expr"], depth) + false_expr["predicate"] + self.gen_expr(false_expr["right_expr"], depth)
+            return "(" + expr + ")"
+        else:
+            true_expr = self.gen_true(depth - 1)
+            return " (not " + true_expr + ")"
+
+    def gen_leaf(self, bvalue):
+        if (decision(0.75)):
+            return str(bvalue)
+        else:
+            leaf_expr = random.choice(self.leafs[bvalue])
+            var = random.choice(self.variables["bool"])["name"]
+            return "(" + leaf_expr.format(var) + ")" # leaf_expr.format(var)
 
 def decision(prob):
     """generate something wih a certain probability"""
     return (random.random() > prob)
 
-def run_generator(contract_vars):
+def run_generator(contract_vars, depth):
     #do_tests()
-    variables = contract_vars
-    expr = gen_tautology(variables)
+    t_gen = Tautology_Generator(contract_vars, depth)
+    expr = t_gen.gen_tautology()
     print(expr)
-    print(eval(expr[4:]))
+    # print(eval(expr[4:]))
