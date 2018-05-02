@@ -1,4 +1,8 @@
-import tautology_generator as tgen
+import tautology_generator as t_gen
+import random as rand
+
+booleans = ["True", "False"]
+var = {'bool': [{'name': 'bvar', 'type': 'bool'}]}
 
 def do_tests():
     true_pass = True
@@ -6,9 +10,11 @@ def do_tests():
     num_expr = 500
     depth = 10
 
+    tgen = t_gen.Tautology_Generator(var, depth)
+
     print("Testing true statements")
     for i in range(num_expr):
-        expr = tgen.gen_expr(True, depth)
+        expr = parse_solidity_expr(tgen.gen_expr(True, depth))
         res = eval(expr)
 
         if(res == False):
@@ -22,7 +28,7 @@ def do_tests():
 
     print("Testing true statements")
     for i in range(num_expr):
-        expr = tgen.gen_expr(False, depth)
+        expr = parse_solidity_expr(tgen.gen_expr(False, depth))
         res = eval(expr)
 
         if(res != False):
@@ -33,5 +39,11 @@ def do_tests():
         print ("All false tests passed")
     else: 
         print ("False tests NOT passed")
+
+def parse_solidity_expr(expr):
+    # expr = expr.replace("||", "or")
+    # expr = expr.replace("&&", "and")
+    expr = expr.replace("bvar", rand.choice(booleans))
+    return expr
 
 do_tests()
