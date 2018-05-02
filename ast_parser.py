@@ -6,8 +6,10 @@
 # TODO add support for floats and all uint types
 supported_types = {
   "t_bool" : "bool",
-  "t_uint256" : "int",
+  "t_uint256" : "uint",
+  "t_int256" : "int",
   "t_string_storage" : "string",
+  "t_string_storage_ptr" : "string",
   "t_address" : "address",
   "t_mapping" : "mapping",
   "t_array" : "array"
@@ -34,7 +36,7 @@ def parse_variable(var):
     """
     var_info = {}
     var_info["name"] = var["name"]
-
+    print(var["name"])
     # get the variable type
     raw_base_type = var["typeDescriptions"]["typeIdentifier"].split("$")[0]
     base_type = infer_type(raw_base_type)
