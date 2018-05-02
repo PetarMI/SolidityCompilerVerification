@@ -55,6 +55,18 @@ def parse_variable(var):
 
     return var_info
 
+def preprocess_vars(flat_vars):
+    proc_vars = {}
+
+    for var in flat_vars:
+        v_type = var["type"]
+        if (v_type not in var):
+            proc_vars[v_type] = [var]
+        else:
+            proc_vars[v_type].append(var)
+
+    return proc_vars
+
 # TODO doesn't work with nested types
 def parse_composite_types(var, var_type):
     """ Parse the composite types of arrays and mappings 
