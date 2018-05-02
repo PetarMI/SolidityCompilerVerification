@@ -5,17 +5,17 @@ import tautology_generator
 
 contract_file = "Coin"
 
-if_sources, global_vars = ast_walker.run_ast_walker(contract_file)
+if_sources, vars = ast_walker.run_ast_walker(contract_file)
 print("Finding if statements:")
 print(if_sources)
 
-print("\nFinding global variables: ")
-ast_walker.pretty_print_vars(global_vars)
+print("\nFinding variables: ")
+ast_walker.pretty_print_vars(vars)
 
-mutator.do_mutation(contract_file, if_sources)
+# mutator.do_mutation(contract_file, if_sources)
 
 print("\nRunning inequality generator. OUTPUT:")
 #ineq_gen.run_generator()
 
 print("\nRunning boolean generator. OUTPUT:")
-tautology_generator.run_generator()
+tautology_generator.run_generator(vars)

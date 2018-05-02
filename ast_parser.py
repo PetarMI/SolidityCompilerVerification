@@ -36,7 +36,7 @@ def parse_variable(var):
     """
     var_info = {}
     var_info["name"] = var["name"]
-    print(var["name"])
+
     # get the variable type
     raw_base_type = var["typeDescriptions"]["typeIdentifier"].split("$")[0]
     base_type = infer_type(raw_base_type)

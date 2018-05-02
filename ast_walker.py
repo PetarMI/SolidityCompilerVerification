@@ -46,39 +46,6 @@ def find_contract_funcs(contract):
     else:
         raise ValueError("No functions in contract.")
 
-def find_global_vars(contract):
-    vars = []
-
-    for node in contract:
-        if (node["nodeType"] == "VariableDeclaration"):
-            var = ap.parse_variable(node)
-            # did we recognize the type
-            if(var != None):
-                vars.append(var)
-
-    return vars
-
-def find_local_vars(statements):
-    vars = []
-
-    for statement in statements:
-        if(statement["nodeType"] == "VariableDeclarationStatement"):
-            # this is weird - the ast has a list of declarations
-            declarations = statement["declarations"]
-            for d in declarations:
-                # do the same as in find_global_vars
-                if (d["nodeType"] == "VariableDeclaration"):
-                    var = ap.parse_variable(d)
-                    # did we recognize the type
-                    if(var != None):
-                        vars.append(var)
-        else: 
-            nested_vars = find_local_vars(find_nested_statements(statement))
-            if (nested_vars):
-                vars.extend(nested_vars)
-
-    return vars;
-
 def if_extractor(stmnt):
     ifs_list = []
     if stmnt["trueBody"] != None and "statements" in stmnt["trueBody"].keys():
@@ -113,6 +80,22 @@ def find_ifs(functions):
                 if_statements[func_name] = if_statements[func_name] + if_extractor(statement)
     return if_statements
 
+def find_vars(contract):
+    vars = []
+
+    for node in contract:
+        if (node["nodeType"] == "VariableDeclaration"):
+            var = ap.parse_variable(node)
+            # did we recognize the type
+            if(var != None):
+                vars.append(var)
+        else: 
+            nested_vars = find_vars(find_nested_nodes(node))
+            if (nested_vars):
+                vars.extend(nested_vars)
+
+    return vars;
+
 def get_sources(statements):
     sources = []
 
@@ -123,23 +106,27 @@ def get_sources(statements):
 
     return ap.parse_sources(sources)
 
-# TODO nested statements of If-else bodies
-def find_nested_statements(node):
-    node_body = node.get("body", None)
+def find_nested_nodes(node):
+    nodes = []
 
-    # does the statement have a body
-    if(node_body != None):
-        return node_body.get("statements", [])
+    """supported nodes are 
+        - function bodies
+        - nested variable declarations 
+        - TODO if statement bodies
+    """
+    func_body = node.get("body", None)
+    infunc_var = node.get("declarations", None)
 
-    return []
+    if(func_body != None):
+        nodes.extend(func_body.get("statements", []))
+    elif(infunc_var != None):
+        nodes.extend(infunc_var)
+    
+    return nodes
 
 def pretty_print_vars(vars):
     for var in vars:
-        for k, v in var.items():
-            if(k == "name"):
-                print(k + " " + v)
-            else:
-                print("\t" + k + " " + v)
+        print(var["name"])
 
 def run_ast_walker(ast_file):
     """Parameter: Just the base name of the ast we are exploring"""
@@ -149,10 +136,10 @@ def run_ast_walker(ast_file):
     if_statements = find_ifs(functions)
     if_sources = get_sources(if_statements)
 
-    g_vars = find_global_vars(contract)
-    l_vars = find_local_vars(functions)
-    #pretty_print_vars(l_vars)
-    print(l_vars)
-    return if_sources, g_vars
+    vars = find_vars(contract)
+    pretty_print_vars(vars)
+
+    #print(if_sources)
+    return if_sources, vars
 
 run_ast_walker(test_file)

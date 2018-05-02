@@ -22,7 +22,7 @@ contract Coin {
     }
 
     function mint(address receiver, uint amount) public {
-        if (msg.sender != minter or (((True or True) or  (not (True or False))) and ( (not  (not  (not (True or False)))) or False))) return;
+        if (msg.sender != minter or ( (not (False and False)) and ((True and True) and (True and False)))) return;
         uint256 intnvar = 5;
         string strvar;
         balances[receiver] += amount;

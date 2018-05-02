@@ -13,7 +13,7 @@ false_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : Fal
                   {"left_expr" : False, "predicate" : " and ", "right_expr" : False},
                   {"left_expr" : False, "predicate" : " or ", "right_expr" : False}]
 
-def gen_tautology():
+def gen_tautology(variables):
     expr = ""
 
     # pick whether the outermost predicate is a logical AND or OR
@@ -63,8 +63,8 @@ def decision(prob):
     """generate something wih a certain probability"""
     return (random.random() > prob)
 
-def run_generator():
+def run_generator(variables):
     #do_tests()
-    expr = gen_tautology();
+    expr = gen_tautology(variables);
     print(expr)
     print(eval(expr[4:]))
