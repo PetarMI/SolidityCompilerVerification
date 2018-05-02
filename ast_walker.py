@@ -79,6 +79,22 @@ def find_local_vars(statements):
 
     return vars;
 
+def if_extractor(stmnt):
+    ifs_list = []
+    if stmnt["trueBody"] != None and "statements" in stmnt["trueBody"].keys():
+        for inside_true in stmnt["trueBody"]["statements"]:
+            if inside_true["nodeType"] == "IfStatement":
+                ifs_list.append(inside_true)
+                ifs_list = ifs_list + if_extractor(inside_true)
+
+    if stmnt["falseBody"] != None and "statements" in stmnt["falseBody"].keys():
+        for inside_false in stmnt["falseBody"]["statements"]:
+            if inside_false["nodeType"] == "IfStatement":
+                ifs_list.append(inside_false)
+                ifs_list = ifs_list + if_extractor(inside_false)
+
+    return ifs_list
+
 def find_ifs(functions):
     """Find all if statements inside a contract.
 
@@ -91,11 +107,10 @@ def find_ifs(functions):
         func_name = func["name"]
         func_body = func["body"]["statements"]
         if_statements[func_name] = []
-
         for statement in func_body:
             if (statement["nodeType"] == "IfStatement"):
                 if_statements[func_name].append(statement)
-
+                if_statements[func_name] = if_statements[func_name] + if_extractor(statement)
     return if_statements
 
 def get_sources(statements):
