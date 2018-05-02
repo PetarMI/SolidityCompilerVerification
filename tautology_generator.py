@@ -2,6 +2,7 @@ import random
 
 depth = 3
 not_probability = 0.2
+variables = []
 
 true_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : True}, 
                  {"left_expr" : True, "predicate" : " or ", "right_expr" : True},
@@ -63,8 +64,9 @@ def decision(prob):
     """generate something wih a certain probability"""
     return (random.random() > prob)
 
-def run_generator(variables):
+def run_generator(contract_vars):
     #do_tests()
-    expr = gen_tautology(variables);
+    variables = contract_vars
+    expr = gen_tautology(variables)
     print(expr)
     print(eval(expr[4:]))

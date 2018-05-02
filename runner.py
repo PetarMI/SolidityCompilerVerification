@@ -7,7 +7,7 @@ contract_file = "Coin"
 
 if_sources, vars = ast_walker.run_ast_walker(contract_file)
 print("Finding if statements:")
-print(if_sources)
+#print(if_sources)
 
 print("\nFinding variables: ")
 ast_walker.pretty_print_vars(vars)

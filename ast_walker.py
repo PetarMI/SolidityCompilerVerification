@@ -81,20 +81,23 @@ def find_ifs(functions):
     return if_statements
 
 def find_vars(contract):
-    vars = []
+    return ap.preprocess_vars(find_vars_aux(contract))
+
+def find_vars_aux(contract):
+    all_vars = []
 
     for node in contract:
         if (node["nodeType"] == "VariableDeclaration"):
             var = ap.parse_variable(node)
             # did we recognize the type
             if(var != None):
-                vars.append(var)
+                all_vars.append(var)
         else: 
-            nested_vars = find_vars(find_nested_nodes(node))
+            nested_vars = find_vars_aux(find_nested_nodes(node))
             if (nested_vars):
-                vars.extend(nested_vars)
+                all_vars.extend(nested_vars)
 
-    return vars;
+    return all_vars;
 
 def get_sources(statements):
     sources = []
@@ -125,8 +128,10 @@ def find_nested_nodes(node):
     return nodes
 
 def pretty_print_vars(vars):
-    for var in vars:
-        print(var["name"])
+    for k, v in vars.items():
+        print(k)
+        for var in v:
+            print("\t" + var["name"])
 
 def run_ast_walker(ast_file):
     """Parameter: Just the base name of the ast we are exploring"""
@@ -136,10 +141,10 @@ def run_ast_walker(ast_file):
     if_statements = find_ifs(functions)
     if_sources = get_sources(if_statements)
 
-    vars = find_vars(contract)
-    pretty_print_vars(vars)
+    all_vars = find_vars(contract)
+    # pretty_print_vars(all_vars)
 
     #print(if_sources)
-    return if_sources, vars
+    return if_sources, all_vars
 
 run_ast_walker(test_file)
