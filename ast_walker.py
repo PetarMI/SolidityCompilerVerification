@@ -142,7 +142,7 @@ def run_ast_walker(ast_file):
     if_sources = get_sources(if_statements)
 
     all_vars = find_vars(contract)
-    # pretty_print_vars(all_vars)
+    pretty_print_vars(all_vars)
 
     #print(if_sources)
     return if_sources, all_vars

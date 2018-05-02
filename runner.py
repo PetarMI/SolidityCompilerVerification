@@ -13,10 +13,10 @@ print(if_sources)
 print("\nFinding variables: ")
 ast_walker.pretty_print_vars(all_vars)
 
-# mutator.do_mutation(contract_file, if_sources)
-
 print("\nRunning inequality generator. OUTPUT:")
 #ineq_gen.run_generator()
 
 print("\nRunning boolean generator. OUTPUT:")
 tautology_generator.run_generator(all_vars, expr_depth)
+
+mutator.run_mutator(contract_file, if_sources, all_vars, expr_depth)

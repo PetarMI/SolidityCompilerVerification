@@ -60,7 +60,7 @@ def preprocess_vars(flat_vars):
 
     for var in flat_vars:
         v_type = var["type"]
-        if (v_type not in var):
+        if (v_type not in proc_vars):
             proc_vars[v_type] = [var]
         else:
             proc_vars[v_type].append(var)
