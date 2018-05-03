@@ -92,11 +92,14 @@ def find_nested_nodes(node):
     """
     func_body = node.get("body", None)
     infunc_var = node.get("declarations", None)
+    if_body = node.get("trueBody", None)
 
     if(func_body != None):
         nodes.extend(func_body.get("statements", []))
     elif(infunc_var != None):
         nodes.extend(infunc_var)
+    elif(if_body != None):
+        nodes.extend(if_body.get("statements", []))
     
     return nodes
 

@@ -9,12 +9,10 @@ contract Coin {
     mapping (address => uint) public balances;
     uint256[] garrvar;
 
-    // Events allow light clients to react on
-    // changes efficiently.
+    // Events allow light clients to react on changes efficiently.
     event Sent(address from, address to, uint amount);
 
-    // This is the constructor whose code is
-    // run only when the contract is created.
+    // This is the constructor whose code is run only when the contract is created.
     function Coin() public {
         minter = msg.sender;
         uint[] arrvar;
@@ -29,6 +27,9 @@ contract Coin {
                 string nstring;
             }
             int nint = 5;
+            if(true){
+               uint256[] arrvar; 
+            }
         }
         string strvar;
         balances[receiver] += amount;
