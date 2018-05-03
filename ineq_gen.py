@@ -3,13 +3,13 @@ import random
 class Ineq_Generator():
     # Class to generate random inequalities
 
-    def __init__(self,symbols_str, symbols, ops_str, nums, nums_length, vars, type):
+    def __init__(self,symbols_str, symbols, ops_str, nums, nums_length, variabs, type):
         self.symbols_str = symbols_str
         self.symbols = symbols
         self.ops_str=  ops_str
         self.nums = nums
         self.nums_length = nums_length
-        self.vars = vars
+        self.variabs = variabs
         self.type = type
 
     def gen_eq(self):
@@ -33,10 +33,10 @@ class Ineq_Generator():
             val = eval(eq)
             return eq, val
         else:
-            vars = []
-            for var in self.vars['uint']:
-                vars.append(var['name'])
-            return vars
+            variables = []
+            for variable in self.variabs['uint']:
+                variables.append(variable['name'])
+            return variables
 
     def gen_inequality(self, bool, depth):
         '''generates the inequality itself'''
@@ -50,8 +50,8 @@ class Ineq_Generator():
                 eq2, val_eq2 = self.gen_eq()
                 res = self.symbols[symbol](val_eq1, val_eq2)
             else:
-                vars = self.gen_eq()
-                eq1 = vars[random.randint(0, len(vars)-1)]
+                variabs = self.gen_eq()
+                eq1 = variabs[random.randint(0, len(variabs)-1)]
                 eq2 = eq1
                 res = decision(0.5)
 
@@ -98,7 +98,7 @@ def decision(prob):
         """generate something wih a certain probability"""
         return (random.random() > prob)
 
-def run_generator(vars):
+def run_generator(variabs):
     symbols_str_int = ['<', '>', '>=', '<=']
     symbols_str_var = ['==', '>=', '<=']
 
@@ -109,8 +109,8 @@ def run_generator(vars):
         nums.append(random.randint(-10000, 10000))
     l = len(nums)
 
-    generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, vars, "integers")
-    generatorVar  = Ineq_Generator(symbols_str_var, symbols, ops_str, nums, l, vars, "variables")
+    generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, variabs, "integers")
+    generatorVar  = Ineq_Generator(symbols_str_var, symbols, ops_str, nums, l, variabs, "variables")
 
     if decision(0.5):
         intExpr = generatorInt.gen_tautology(True, 4, "")
