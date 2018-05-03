@@ -4,7 +4,6 @@ contract Coin {
     // The keyword "public" makes those variables
     // readable from outside.
     bool gboolvar = true;
-    uint gintvar = 8;
     string gstrvar = "sirene";
     address public minter;
     mapping (address => uint) public balances;
@@ -24,6 +23,13 @@ contract Coin {
     function mint(address receiver, uint amount) public {
         if (msg.sender != minter) return;
         uint256 intnvar = 5;
+        if(true) {
+            bool nbool = false;
+            if(false){
+                string nstring;
+            }
+            int nint = 5;
+        }
         string strvar;
         balances[receiver] += amount;
     }
@@ -33,6 +39,9 @@ contract Coin {
         bool bvar = true;
         balances[msg.sender] -= amount;
         int intvar;
+        if (5 == 5){
+            uint[] narrvar;
+        }
         balances[receiver] += amount;
         emit Sent(msg.sender, receiver, amount);
     }
