@@ -8,7 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-contracts/mutants/
+contracts/mutants/*
 build/
 develop-eggs/
 dist/

@@ -26,6 +26,11 @@ def parse_sources(sources):
 
     return parsed_sources
 
+def extract_var(node):
+    for var_decl in node["declarations"]:
+        if(var_decl["nodeType"] == "VariableDeclaration"):
+            return var_decl
+
 def parse_variable(var):
     """ Parse a variable declaration node to a dictionary structure
     Example: { "name" : name,
