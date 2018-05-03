@@ -38,7 +38,9 @@ class Ineq_Generator():
                 variables.append(variable['name'])
             return variables
 
-    def gen_inequality(self, bool, depth):
+    def gen_inequality(self, args):
+        bool = args[0]
+        depth = args[3]
         '''generates the inequality itself'''
         while depth > 0:
             depth -= 1
@@ -66,33 +68,28 @@ class Ineq_Generator():
                 else:
                     return eq1 + " " + symbol + " " + eq2
 
-    def gen_tautology(self, bool, tot_depth, expr):
-        '''recursively generates tautology consisting of inequalities'''
-        tot_depth -= 1
+    def gen_tautology(self, args):
+        bool = args[0]
+        args[1] -=  1
+        tot_depth = args[1]
+        expr = args[2]
         depth = random.randint(1, 3)
+        args[3] = depth
+        func_list = [self.gen_tautology, self.gen_inequality]
+        pred_list = [" and ", " or "]
+
+        if tot_depth < 1 :
+            return self.gen_inequality(args)
 
         if self.type == "integers":
-            if (decision(0.5)):
-                expr += " and " + " ( " + self.gen_inequality(bool, depth) + " ) "
-            else:
-                expr += " or " + " ( " + self.gen_inequality(bool, depth) + " ) "
+            retExpr = "(" + "(" + random.choice(func_list)(args) + ")" +  random.choice(pred_list) +  "(" + random.choice(func_list)(args) + ")" + ")"
         else:
             if (bool):
-                if (decision(0.5)):
-                    expr += " and " + " ( " + self.gen_inequality(bool, depth) + " ) "
-                else:
-                    expr += " or " + " ( " + self.gen_inequality(bool, depth) + " ) "
+                retExpr = "(" + "(" +random.choice(func_list)(args) + ")" + random.choice(pred_list) + "(" + random.choice(func_list)(args) + ")" + ")"
             else:
-                if (decision(0.5)):
-                    expr += " and " + "not ( " + self.gen_inequality(bool, depth) + " ) "
-                else:
-                    expr += " or " + "not ( " + self.gen_inequality(bool, depth) + " ) "
-        if tot_depth > 0:
-            expr += self.gen_tautology(bool, tot_depth, expr)
-            return expr
-        else:
-            return ""
+                retExpr = "not (" + "(" + random.choice(func_list)(args) + ")" + random.choice(pred_list) + "(" + random.choice(func_list)(args) + ")" + ")"
 
+        return retExpr
 
 def decision(prob):
         """generate something wih a certain probability"""
@@ -113,14 +110,19 @@ def run_generator(variabs):
     generatorVar  = Ineq_Generator(symbols_str_var, symbols, ops_str, nums, l, variabs, "variables")
 
     if decision(0.5):
-        intExpr = generatorInt.gen_tautology(True, 4, "")
+        intExpr = generatorInt.gen_tautology([True, 4, "", 1])
+        intExpr = "and " + intExpr
     else:
-        intExpr = generatorInt.gen_tautology(False, 4, "")
+        intExpr = generatorInt.gen_tautology([False, 4, "", 1])
+        intExpr = "or " + intExpr
 
     if decision(0.5):
-        varExprs = generatorVar.gen_tautology(True, 4, "")
+        varExprs = generatorVar.gen_tautology([True, 4, "", 1])
+        varExprs = "and " + varExprs
+
     else:
-        varExprs = generatorVar.gen_tautology(False, 4, "")
+        varExprs = generatorVar.gen_tautology([False, 4, "", 1])
+        varExprs = "or " + varExprs
 
 
     return intExpr, varExprs
