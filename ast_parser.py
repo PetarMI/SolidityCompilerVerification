@@ -16,15 +16,11 @@ supported_types = {
 }
 
 #TODO sort them
-def parse_sources(sources):
-    """Return each source as a pair of offset and block length"""
-    parsed_sources = []
+def get_source(block):
+    raw_src = block["if"]["condition"]["src"]
 
-    for src in sources:
-        split_source = src.split(":")
-        parsed_sources.append([int(split_source[0]), int(split_source[1])])
-
-    return parsed_sources
+    split_source = raw_src.split(":")
+    return [int(split_source[0]), int(split_source[1])]
 
 def extract_var(node):
     for var_decl in node["declarations"]:
@@ -59,6 +55,13 @@ def parse_variable(var):
         return None
 
     return var_info
+
+def preprocess_blocks(blocks):
+    for block in blocks:
+        scope_vars = preprocess_vars(block["scope_vars"])
+        block["scope_vars"] = scope_vars
+
+    return blocks
 
 def preprocess_vars(flat_vars):
     proc_vars = {}

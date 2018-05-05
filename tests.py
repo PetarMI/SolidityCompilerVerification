@@ -41,8 +41,8 @@ def do_tests():
         print ("False tests NOT passed")
 
 def parse_solidity_expr(expr):
-    # expr = expr.replace("||", "or")
-    # expr = expr.replace("&&", "and")
+    expr = expr.replace("||", "or")
+    expr = expr.replace("&&", "and")
     expr = expr.replace("bvar", rand.choice(booleans))
     return expr
 

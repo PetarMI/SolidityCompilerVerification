@@ -72,16 +72,6 @@ def parse_contract_aux(contract, visible_vars):
 
     return blocks
 
-def get_sources(statements):
-    sources = []
-
-    for func, ifstats in statements.items():
-        for ifstat in ifstats:
-            # condition is an attibute of the ast -> get the condition of the if statement
-            sources.append(ifstat["condition"]["src"])
-
-    return ap.parse_sources(sources)
-
 def find_nested_nodes(node):
     nodes = []
 
@@ -114,8 +104,11 @@ def copy_vars(variables):
 def pretty_print_blocks(blocks):
     for block in blocks:
         print(block["if"]["src"])
-        for var in block["scope_vars"]:
-            sys.stdout.write(var["name"] + " ")
+        for k, v in block["scope_vars"].items():
+            sys.stdout.write(k + " : ")
+            for var in v:
+                sys.stdout.write(var["name"] + ", ")
+            print()
         print()
 
 def run_ast_walker(ast_file):
@@ -124,17 +117,10 @@ def run_ast_walker(ast_file):
     contract = find_contract_defs(ast)
 
     blocks = parse_contract(contract)
+    blocks = ap.preprocess_blocks(blocks)
+    
+    # pretty_print_blocks(blocks)
 
-    pretty_print_blocks(blocks)
-
-    #functions = find_contract_funcs(contract)
-    #if_statements = find_ifs(functions)
-    #if_sources = get_sources(if_statements)
-
-    #all_vars = find_vars(contract)
-    # pretty_print_vars(all_vars)
-
-    #print(if_sources)
-    #return if_sources, all_vars
-
+    return blocks
+    
 run_ast_walker(test_file)

@@ -1,33 +1,35 @@
 import random
 import tautology_generator as t_gen
+import ast_parser as aparse
 
 class Mutator():
 
-    def __init__(self, seed_contract, sources, scope_vars, expr_depth):
-        self.seed_contract = seed_contract
-        self.sources = sources
-        self.tgen = t_gen.Tautology_Generator(scope_vars, expr_depth)
-
+    def __init__(self, seed_contract, blocks, expr_depth):
+        self.blocks = blocks
+        self.expr_depth = expr_depth
+        # path stuff
         self.contract_dir = "contracts/"
         self.mutants_dir = self.contract_dir + "mutants/"
         self.contract_extension = ".sol"
-        self.seed_path = self.contract_dir +self.seed_contract + self.contract_extension
+        self.seed_contract = seed_contract
+        self.seed_path = self.contract_dir + self.seed_contract + self.contract_extension
 
     def mutate(self, n):
         mutated = False
         mutated_contract = ""
 
         with open(self.seed_path) as f:
-            for src in self.sources:
+            for block in self.blocks:
+                src = aparse.get_source(block)
                 offset = src[0]
                 length = src[1]
-                
+
                 pointer = f.tell()
-                block = f.read(offset + length - pointer)
-                mutated_contract += block
+                code_block = f.read(offset + length - pointer)
+                mutated_contract += code_block
                 
                 if (decision()):
-                    mutated_contract += (self.gen_tautology())
+                    mutated_contract += (self.gen_tautology(block["scope_vars"]))
                     mutated = True
             
             #read rest of file
@@ -45,10 +47,10 @@ class Mutator():
         with open(mutant_name, 'w') as f:
             f.write(mutant)
 
-    def gen_tautology(self):
+    def gen_tautology(self, scope_vars):
         """External function
         Generate the tautology we will insert in the if condition"""
-        return self.tgen.gen_tautology()
+        return t_gen.run_generator(scope_vars, self.expr_depth)
 
     def do_mutation(self):
         mutants = 0
@@ -61,6 +63,6 @@ def decision():
     """mutate every line with 66% probability"""
     return random.random() > 0.33
 
-def run_mutator(seed_contract, if_stats, contract_vars, depth):
-    mutator = Mutator(seed_contract, if_stats, contract_vars, depth)
+def run_mutator(seed_contract, blocks, depth):
+    mutator = Mutator(seed_contract, blocks, depth)
     mutator.do_mutation()

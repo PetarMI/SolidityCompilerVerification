@@ -6,21 +6,23 @@ import tautology_generator
 contract_file = "Coin"
 expr_depth = 3
 
-if_sources, all_vars = ast_walker.run_ast_walker(contract_file)
-print("Finding if statements:")
-print(if_sources)
+blocks = ast_walker.run_ast_walker(contract_file)
 
 print("\nFinding variables: ")
-ast_walker.pretty_print_vars(all_vars)
+ast_walker.pretty_print_blocks(blocks)
 
-print("\nRunning inequality generator. OUTPUT:")
+"""print("\nRunning inequality generator. OUTPUT:")
 in_eq,var_eq = ineq_gen.run_generator(all_vars)
 print(in_eq)
 print("=======================================================================================================================================")
 print("With vars:")
-print(var_eq)
+print(var_eq)"""
 
 print("\nRunning boolean generator. OUTPUT:")
-tautology_generator.run_generator(all_vars, expr_depth)
+for b in blocks:
+	scope_vars = b["scope_vars"]
+	print("if statement")
+	expr = tautology_generator.run_generator(scope_vars, expr_depth)
+	print(expr)
 
-#mutator.run_mutator(contract_file, if_sources, all_vars, expr_depth)
+mutator.run_mutator(contract_file, blocks, expr_depth)

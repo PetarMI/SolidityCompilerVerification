@@ -4,18 +4,18 @@ class Tautology_Generator():
 
     not_probability = 0.2
 
-    leafs = { True : ["{0} or True", "True or {0}"],
-              False : ["{0} and False", "False and {0}"] }
+    leafs = { True : ["{0} || True", "True || {0}"],
+              False : ["{0} && False", "False && {0}"] }
 
-    true_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : True}, 
-                     {"left_expr" : True, "predicate" : " or ", "right_expr" : True},
-                     {"left_expr" : True, "predicate" : " or ", "right_expr" : False},
-                     {"left_expr" : False, "predicate" : " or ", "right_expr" : True}]
+    true_variants = [{"left_expr" : True, "predicate" : " && ", "right_expr" : True}, 
+                     {"left_expr" : True, "predicate" : " || ", "right_expr" : True},
+                     {"left_expr" : True, "predicate" : " || ", "right_expr" : False},
+                     {"left_expr" : False, "predicate" : " || ", "right_expr" : True}]
 
-    false_variants = [{"left_expr" : True, "predicate" : " and ", "right_expr" : False}, 
-                      {"left_expr" : False, "predicate" : " and ", "right_expr" : True},
-                      {"left_expr" : False, "predicate" : " and ", "right_expr" : False},
-                      {"left_expr" : False, "predicate" : " or ", "right_expr" : False}]
+    false_variants = [{"left_expr" : True, "predicate" : " && ", "right_expr" : False}, 
+                      {"left_expr" : False, "predicate" : " && ", "right_expr" : True},
+                      {"left_expr" : False, "predicate" : " && ", "right_expr" : False},
+                      {"left_expr" : False, "predicate" : " || ", "right_expr" : False}]
 
     def __init__(self, scope_vars, expr_depth):
         self.variables = scope_vars
@@ -26,9 +26,9 @@ class Tautology_Generator():
 
         # pick whether the outermost predicate is a logical AND or OR
         if(decision(0.5)):
-            expr = " and " + self.gen_expr(True, self.depth)
+            expr = " && " + self.gen_expr(True, self.depth)
         else:
-            expr = " or " + self.gen_expr(False, self.depth)
+            expr = " || " + self.gen_expr(False, self.depth)
 
         return expr
 
@@ -74,7 +74,13 @@ class Tautology_Generator():
             return str(bvalue)
         else:
             leaf_expr = random.choice(self.leafs[bvalue])
-            var = random.choice(self.variables["bool"])["name"]
+            bool_vars = self.variables.get("bool", None)
+
+            # check if we actually have bool variables to use
+            if (bool_vars and len(bool_vars) > 0):
+                var = random.choice(bool_vars)["name"]
+            else:
+                var = str(bvalue)
             return "(" + leaf_expr.format(var) + ")" # leaf_expr.format(var)
 
 def decision(prob):
@@ -82,8 +88,8 @@ def decision(prob):
     return (random.random() > prob)
 
 def run_generator(contract_vars, depth):
-    #do_tests()
     t_gen = Tautology_Generator(contract_vars, depth)
     expr = t_gen.gen_tautology()
-    print(expr)
-    # print(eval(expr[4:]))
+    # print(expr)
+
+    return expr
