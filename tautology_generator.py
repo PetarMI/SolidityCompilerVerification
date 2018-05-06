@@ -4,8 +4,8 @@ class Tautology_Generator():
 
     not_probability = 0.2
 
-    leafs = { True : ["{0} || True", "True || {0}"],
-              False : ["{0} && False", "False && {0}"] }
+    leafs = { True : ["{0} || true", "true || {0}"],
+              False : ["{0} && false", "false && {0}"] }
 
     true_variants = [{"left_expr" : True, "predicate" : " && ", "right_expr" : True}, 
                      {"left_expr" : True, "predicate" : " || ", "right_expr" : True},
@@ -57,7 +57,7 @@ class Tautology_Generator():
             return "(" + expr + ")"
         else:
             false_expr = self.gen_false(depth - 1)
-            return " (not " + false_expr + ")"
+            return " (!" + false_expr + ")"
 
     def gen_false(self, depth):
         if (decision(self.not_probability)):
@@ -67,11 +67,11 @@ class Tautology_Generator():
             return "(" + expr + ")"
         else:
             true_expr = self.gen_true(depth - 1)
-            return " (not " + true_expr + ")"
+            return " (!" + true_expr + ")"
 
     def gen_leaf(self, bvalue):
         if (decision(0.75)):
-            return str(bvalue)
+            return get_literal(bvalue)
         else:
             leaf_expr = random.choice(self.leafs[bvalue])
             bool_vars = self.variables.get("bool", None)
@@ -80,12 +80,18 @@ class Tautology_Generator():
             if (bool_vars and len(bool_vars) > 0):
                 var = random.choice(bool_vars)["name"]
             else:
-                var = str(bvalue)
+                var = get_literal(bvalue)
             return "(" + leaf_expr.format(var) + ")" # leaf_expr.format(var)
 
 def decision(prob):
     """generate something wih a certain probability"""
     return (random.random() > prob)
+
+def get_literal(bvalue):
+    if(bvalue):
+        return "true";
+    else:
+        return "false"
 
 def run_generator(contract_vars, depth):
     t_gen = Tautology_Generator(contract_vars, depth)
