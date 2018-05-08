@@ -23,9 +23,13 @@ def get_source(block):
     return [int(split_source[0]), int(split_source[1])]
 
 def extract_var(node):
-    for var_decl in node["declarations"]:
-        if(var_decl["nodeType"] == "VariableDeclaration"):
-            return var_decl
+    """ Get the VariableDeclaration node """
+    if (node["nodeType"] == "VariableDeclarationStatement"):
+        for var_decl in node["declarations"]:
+            if(var_decl["nodeType"] == "VariableDeclaration"):
+                return var_decl
+    else:
+        return node
 
 def parse_variable(var):
     """ Parse a variable declaration node to a dictionary structure
@@ -35,7 +39,7 @@ def parse_variable(var):
                "value_type" : val_type }
     In case of an array treat key_type as the type of the elements
     """
-    var_info = {}
+    var_info = {}   
     var_info["name"] = var["name"]
 
     # get the variable type
@@ -57,6 +61,7 @@ def parse_variable(var):
     return var_info
 
 def preprocess_blocks(blocks):
+    """ For each block separate its scope variables into types """
     for block in blocks:
         scope_vars = preprocess_vars(block["scope_vars"])
         block["scope_vars"] = scope_vars
@@ -64,6 +69,10 @@ def preprocess_blocks(blocks):
     return blocks
 
 def preprocess_vars(flat_vars):
+    """ Function to take a flat list of vars 
+        and return variables divided into types
+        Returns: dictionary with types as keys and lists of vars as values
+    """
     proc_vars = {}
 
     for var in flat_vars:

@@ -1,21 +1,4 @@
-
 """ Deprecated code from ast_walker.py """
-def find_contract_funcs(contract):
-    """Find all functions in the contract.
-
-    Raises:
-    ValueError if there are no functions in the contract
-    """
-    functions = []
-
-    for node in contract:
-        if (node["nodeType"] == "FunctionDefinition"):
-            functions.append(node)
-
-    if (len(functions) > 0):
-        return functions
-    else:
-        raise ValueError("No functions in contract.")
 
 def if_extractor(stmnt):
     ifs_list = []
