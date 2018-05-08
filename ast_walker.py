@@ -31,17 +31,35 @@ def find_contract_defs(ast):
         raise ValueError("Empty contract provided.")
 
 def find_contract_funcs(contract):
-    """Find all functions in the contract.
-
-    Raises:
-    ValueError if there are no functions in the contract
+    """ Find all functions in the contract.
+        Return a list of the sort:
+        [ {
+            "f_name" : "<name>"
+            "params" : list of variables as parsed by parse_variable in ast_parser
+            "return_type" : "<return type>"    
+          }, ...
+        ] 
     """
     functions = []
 
     for node in contract:
         if (node["nodeType"] == "FunctionDefinition"):
-            functions.append(node)
+            function = {}
+            function["name"] = node["name"]
+            
+            #find parameters
+            parameter_nodes = node["parameters"].get("parameters", [])
+            parameters = find_vars(parameter_nodes)
+            function["params"] = parameters
 
+            #find return type
+            return_nodes = node["returnParameters"].get("parameters", [])
+            return_parameters = find_vars(return_nodes)
+            function["ret_params"] = return_parameters
+
+            functions.append(function)
+
+    return functions
 
 def parse_contract(contract):
     return parse_contract_aux(contract, [])
@@ -129,16 +147,31 @@ def pretty_print_blocks(blocks):
             print()
         print()
 
+def pretty_print_functions(functions):
+    for func in functions:
+        print("Function name: {0}".format(func["name"]))
+        sys.stdout.write("Parameters: ")
+        for param in func["params"]:
+            sys.stdout.write(param["type"] + ", ")
+        print()
+        sys.stdout.write("Return parameters: ")
+        for return_param in func["ret_params"]:
+            sys.stdout.write(return_param["type"] + ", ")
+        print()
+
 def run_ast_walker(ast_file):
     """Parameter: Just the base name of the ast we are exploring"""
     ast = import_ast(ast_file)
     contract = find_contract_defs(ast)
 
+    functions = find_contract_funcs(contract)
+
     blocks = parse_contract(contract)
     blocks = ap.preprocess_blocks(blocks)
     
     # pretty_print_blocks(blocks)
+    # pretty_print_functions(functions)
 
-    return blocks
+    return blocks, functions
     
 run_ast_walker(test_file)
