@@ -30,6 +30,37 @@ def find_contract_defs(ast):
     else:
         raise ValueError("Empty contract provided.")
 
+def find_contract_funcs(contract):
+    """ Find all functions in the contract.
+        Return a list of the sort:
+        [ {
+            "f_name" : "<name>"
+            "params" : list of variables as parsed by parse_variable in ast_parser
+            "return_type" : "<return type>"    
+          }, ...
+        ] 
+    """
+    functions = []
+
+    for node in contract:
+        if (node["nodeType"] == "FunctionDefinition"):
+            function = {}
+            function["name"] = node["name"]
+            
+            #find parameters
+            parameter_nodes = node["parameters"].get("parameters", [])
+            parameters = find_vars(parameter_nodes)
+            function["params"] = parameters
+
+            #find return type
+            return_nodes = node["returnParameters"].get("parameters", [])
+            return_parameters = find_vars(return_nodes)
+            function["ret_params"] = return_parameters
+
+            functions.append(function)
+
+    return functions
+
 def parse_contract(contract):
     return parse_contract_aux(contract, [])
 
@@ -41,24 +72,18 @@ def parse_contract_aux(contract, visible_vars):
     for node in contract:
         # check the bodies of all functions
         if (node["nodeType"] == "FunctionDefinition"):
+            # add function parameters as inscope variables
+            parameter_nodes = node["parameters"].get("parameters", [])
+            # hide the function parameters from the rest of the functions
+            func_vars = copy_vars(scope_vars)
+            func_vars.extend(find_vars(parameter_nodes))
             # keep searching inside the body of the function
-            func_body_blocks = parse_contract_aux(find_nested_nodes(node), scope_vars)
+            func_body_blocks = parse_contract_aux(find_nested_nodes(node), func_vars)
             if (func_body_blocks):
                 blocks.extend(func_body_blocks)
-        # used for global variables
-        if (node["nodeType"] == "VariableDeclaration"):
-            var = ap.parse_variable(node)
-            # did we recognize the type
-            if(var != None):
-                scope_vars.append(var)
-        # used for local variable declarations
-        elif (node["nodeType"] == "VariableDeclarationStatement"):
-            # just add the variable to the list of in-scope variables
+        if (node["nodeType"] == "VariableDeclaration" or node["nodeType"] == "VariableDeclarationStatement"):
             var_node = ap.extract_var(node)
-            var = ap.parse_variable(var_node)
-            # did we recognize the type
-            if(var != None):
-                scope_vars.append(var)
+            scope_vars.extend(find_vars([var_node]))
         # check the bodies of all if statements
         elif (node["nodeType"] == "IfStatement"):
             # create a new block consisting of if statement, the visible vars and more nested blocks
@@ -78,7 +103,7 @@ def find_nested_nodes(node):
     """supported nodes are 
         - function bodies
         - nested variable declarations 
-        - TODO if statement bodies
+        - TODO else statement bodies
     """
     func_body = node.get("body", None)
     infunc_var = node.get("declarations", None)
@@ -92,6 +117,17 @@ def find_nested_nodes(node):
         nodes.extend(if_body.get("statements", []))
     
     return nodes
+
+def find_vars(nodes):
+    variables = []
+
+    for var_node in nodes:
+        var = ap.parse_variable(var_node)
+        # did we recognize the type
+        if(var != None):
+            variables.append(var)
+
+    return variables
 
 def copy_vars(variables):
     scope_vars = []
@@ -111,16 +147,31 @@ def pretty_print_blocks(blocks):
             print()
         print()
 
+def pretty_print_functions(functions):
+    for func in functions:
+        print("Function name: {0}".format(func["name"]))
+        sys.stdout.write("Parameters: ")
+        for param in func["params"]:
+            sys.stdout.write(param["type"] + ", ")
+        print()
+        sys.stdout.write("Return parameters: ")
+        for return_param in func["ret_params"]:
+            sys.stdout.write(return_param["type"] + ", ")
+        print()
+
 def run_ast_walker(ast_file):
     """Parameter: Just the base name of the ast we are exploring"""
     ast = import_ast(ast_file)
     contract = find_contract_defs(ast)
 
+    functions = find_contract_funcs(contract)
+
     blocks = parse_contract(contract)
     blocks = ap.preprocess_blocks(blocks)
     
     # pretty_print_blocks(blocks)
+    # pretty_print_functions(functions)
 
-    return blocks
+    return blocks, functions
     
 run_ast_walker(test_file)
