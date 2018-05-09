@@ -3,9 +3,8 @@ import random
 class Ineq_Generator():
     # Class to generate random inequalities
 
-    def __init__(self,symbols_str_int, symbols_str_var, symbols, ops_str, nums, nums_length, variabs):
+    def __init__(self,symbols_str_int, symbols, ops_str, nums, nums_length, variabs):
         self.symbols_str_int = symbols_str_int
-        self.symbols_str_var = symbols_str_var
         self.symbols = symbols
         self.ops_str=  ops_str
         self.nums = nums
@@ -16,7 +15,7 @@ class Ineq_Generator():
         '''generate an equation using one of the ops'''
         if type is "integers":
             eq = ""
-            eq_depth = random.randint(1, 3)
+            eq_depth = random.randint(1, 2)
             first = 1
 
             while eq_depth > 0:
@@ -35,8 +34,12 @@ class Ineq_Generator():
         else:
             variables = []
 
-            for variable in self.variabs['uint']:
-                variables.append(variable['name'])
+            if ("uint" in self.variabs.keys()):
+                for variable in self.variabs['uint']:
+                    variables.append(variable['name'])
+            if ("int" in self.variabs.keys()):
+                for variable in self.variabs['int']:
+                    variables.append(variable['name'])
             return variables
 
     def gen_inequality(self, args):
@@ -49,11 +52,17 @@ class Ineq_Generator():
             depth -= 1
 
             if type == "integers":
-                length_sym = len(self.symbols_str_int)
-                symbol = self.symbols_str_int[random.randint(0, length_sym-1)]
+                symbols_str = self.symbols_str_int[0:3]
+                length_sym = len(symbols_str)
+                symbol = symbols_str[random.randint(0, length_sym-1)]
             else:
-                length_sym = len(self.symbols_str_var)
-                symbol = self.symbols_str_var[random.randint(0, length_sym - 1)]
+                if bool:
+                    symbols_str = self.symbols_str_int[2:4]
+                else:
+                    symbols_str = self.symbols_str_int[0:1]
+
+                length_sym = len(symbols_str)
+                symbol = symbols_str[random.randint(0, length_sym - 1)]
 
             if type == "integers":
                 eq1, val_eq1 = self.gen_eq(type)
@@ -63,7 +72,7 @@ class Ineq_Generator():
                 variabs = self.gen_eq(type)
                 eq1 = variabs[random.randint(0, len(variabs)-1)]
                 eq2 = eq1
-                res = decision(0.5)
+                res = bool
 
             if bool:
                 if res:
@@ -76,6 +85,31 @@ class Ineq_Generator():
                 else:
                     return eq1 + " " + symbol + " " + eq2
 
+    def var_with_expression(self, args):
+        vars = []
+        eq1, val1 = self.gen_eq("integers")
+        eq2, val2 = self.gen_eq("integers")
+        bool = args[0]
+        print(self.variabs.keys())
+        if ("uint" in self.variabs.keys()):
+            for variable in self.variabs['uint']:
+                vars.append(variable['name'])
+        if ("int" in self.variabs.keys()):
+            for variable in self.variabs['int']:
+                vars.append(variable['name'])
+
+        var = random.choice(vars)
+
+        if bool:
+            op = random.choice(self.ops_str)
+            retExpr = "(" + var + " " + op + " (" + eq1 + ") == " + var + " " + op + " (" + eq1 + "))"
+        else:
+            op = random.choice(self.ops_str)
+            retExpr = "(" + var + " " + op + " (" + eq1 + ") == " + var + " " + op + " (" + eq2 + "))"
+
+        return retExpr
+
+
     def gen_tautology(self, args):
         bool = args[0]
         args[1] -=  1
@@ -84,11 +118,15 @@ class Ineq_Generator():
         curr_type = args[4]
         depth = random.randint(1, 3)
         args[3] = depth
-        func_list = [self.gen_tautology, self.gen_inequality]
+        if all (k in self.variabs.keys() for k in ("uint","int")):
+            func_list = [self.gen_tautology, self.gen_inequality, self.var_with_expression]
+        else:
+            func_list = [self.gen_tautology, self.gen_inequality]
+
         pred_list = [" and ", " or "]
         types = ["integers", "variables"]
 
-        if "uint" in self.variabs.keys():
+        if ("uint" in self.variabs.keys() or "int" in self.variabs.keys()) :
             args[4] = random.choice(types)
         else:
             args[4] = "integers"
@@ -102,7 +140,7 @@ class Ineq_Generator():
             if (bool):
                 retExpr = "(" + "(" +random.choice(func_list)(args) + ")" + random.choice(pred_list) + "(" + random.choice(func_list)(args) + ")" + ")"
             else:
-                retExpr = "not (" + "(" + random.choice(func_list)(args) + ")" + random.choice(pred_list) + "(" + random.choice(func_list)(args) + ")" + ")"
+                    retExpr = "(" + "(" + random.choice(func_list)(args) + ")" + random.choice(pred_list) + "(" + random.choice(func_list)(args) + ")" + ")"
 
         return retExpr
 
@@ -111,29 +149,34 @@ def decision(prob):
         return (random.random() > prob)
 
 def run_generator(variabs):
-    symbols_str_int = ['<', '>', '>=', '<=']
-    symbols_str_var = ['==', '>=', '<=']
+    symbols_str_int = ['<', '>', '>=', '<=', '==']
     types = ["integers", "variables"]
     symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y), "<=": (lambda x, y: x <= y)}
     ops_str = ['+', '-', '/', '*']
     nums = []
+    bool = decision(0.5)
 
-    if "uint" in variabs.keys():
+
+
+    for i in range(10):
+        nums.append(random.randint(-100000, 100000))
+    l = len(nums)
+
+    generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, variabs)
+
+    if ("uint" in variabs.keys() or "int" in variabs.keys()) :
         type = random.choice(types)
+        #expr_var = generatorInt.var_with_expression(bool)
+        #print(expr_var)
     else:
         type = "integers"
 
-    for i in range(10):
-        nums.append(random.randint(-10000, 10000))
-    l = len(nums)
 
-    generatorInt  = Ineq_Generator(symbols_str_int,symbols_str_var, symbols, ops_str, nums, l, variabs)
-
-    if decision(0.5):
-        intExpr = generatorInt.gen_tautology([True, 4, "", 1, type])
+    if bool:
+        intExpr = generatorInt.gen_tautology([True, 2, "", 1, type])
         intExpr = "and " + intExpr
     else:
-        intExpr = generatorInt.gen_tautology([False, 4, "", 1, type])
+        intExpr = generatorInt.gen_tautology([False, 2, "", 1, type])
         intExpr = "or " + intExpr
 
-    return intExpr
+    return intExpr# expr_var
