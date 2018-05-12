@@ -119,6 +119,7 @@ def find_nested_nodes(node):
     return nodes
 
 def find_vars(nodes):
+    """ Extracts the variable from the node and parses it """
     variables = []
 
     for var_node in nodes:

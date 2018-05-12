@@ -1,4 +1,5 @@
 import random 
+import function_caller as fc
 
 class Tautology_Generator():
 
@@ -17,8 +18,9 @@ class Tautology_Generator():
                       {"left_expr" : False, "predicate" : " && ", "right_expr" : False},
                       {"left_expr" : False, "predicate" : " || ", "right_expr" : False}]
 
-    def __init__(self, scope_vars, expr_depth):
+    def __init__(self, scope_vars, functions, expr_depth):
         self.variables = scope_vars
+        self.functions = functions
         self.depth = expr_depth
 
     def gen_tautology(self):
@@ -83,6 +85,12 @@ class Tautology_Generator():
                 var = get_literal(bvalue)
             return "(" + leaf_expr.format(var) + ")" # leaf_expr.format(var)
 
+    def call_funcs(self):
+        func_calls = []
+        for t in ["uint", "int", "bool"]:
+            func_calls.extend(fc.prep_functions(self.functions, t, self.variables))
+        return func_calls
+
 def decision(prob):
     """generate something wih a certain probability"""
     return (random.random() > prob)
@@ -93,9 +101,11 @@ def get_literal(bvalue):
     else:
         return "false"
 
-def run_generator(contract_vars, depth):
-    t_gen = Tautology_Generator(contract_vars, depth)
+def run_generator(contract_vars, functions, depth):
+    t_gen = Tautology_Generator(contract_vars, functions, depth)
     expr = t_gen.gen_tautology()
-    # print(expr)
+    func_calls = t_gen.call_funcs()
+    # print("Available function calls:")
+    # print(func_calls)
 
     return expr

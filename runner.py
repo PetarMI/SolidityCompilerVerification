@@ -25,7 +25,7 @@ print("\nRunning boolean generator. OUTPUT:")
 for b in blocks:
 	scope_vars = b["scope_vars"]
 	print("if statement")
-	expr = tautology_generator.run_generator(scope_vars, expr_depth)
+	expr = tautology_generator.run_generator(scope_vars, functions, expr_depth)
 	print(expr)
 
 # mutator.run_mutator(contract_file, blocks, expr_depth)
