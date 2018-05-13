@@ -9,7 +9,8 @@ def prep_functions(funcs, ret_type, scope_vars):
         if (not check_return_type(func, ret_type)):
             continue
         func_call = call_function(func, scope_vars)        
-        functions.append(func_call)
+        if (func_call):
+            functions.append(func_call)
 
     return functions
 
@@ -17,6 +18,10 @@ def call_function(func, scope_vars):
     # go parameter by parameter and try to find a variable to pass as argument
 
     func_call = "{0}(".format(func["name"])
+
+    # check if function takes 0 params
+    if (len(func["params"]) == 0):
+        return func_call + ")"
 
     for param in func["params"]:
         all_vars = scope_vars.get(param["type"], [])
@@ -28,9 +33,9 @@ def call_function(func, scope_vars):
 
         # get an argument to pass or a literal
         arg = get_arg(matching_vars, param["type"])
-        # if no appropraite argument, we drop thi function as callable
+        # if no appropraite argument, we drop this function as callable
         if(not arg):
-            continue
+            return None
 
         func_call += "{0}, ".format(arg)
 
@@ -65,8 +70,8 @@ def match_argument(param, var):
     """ Special check for arrays and mappings """
     p_key = param.get("key_type", None)
     v_key = var.get("key_type", None)
-    p_val = param.get("value_type", None)
-    v_val = var.get("value_type", None)
+    p_val = param.get("val_type", None)
+    v_val = var.get("val_type", None)
 
     if (p_key == v_key and p_val == v_val):
         return True
