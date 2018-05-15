@@ -10,6 +10,7 @@ supported_types = {
   "t_int256" : "int",
   "t_string_storage" : "string",
   "t_string_storage_ptr" : "string",
+  "t_string_memory_ptr" : "string",
   "t_address" : "address",
   "t_mapping" : "mapping",
   "t_array" : "array"

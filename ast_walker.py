@@ -100,10 +100,12 @@ def parse_contract_aux(contract, visible_vars):
 def find_nested_nodes(node):
     nodes = []
 
-    """supported nodes are 
+    """ Just return a list of statements inside a node 
+        supported nodes are 
         - function bodies
         - nested variable declarations 
         - TODO else statement bodies
+        - TODO For loops
     """
     func_body = node.get("body", None)
     infunc_var = node.get("declarations", None)

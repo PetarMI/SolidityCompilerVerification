@@ -16,7 +16,6 @@ def prep_functions(funcs, ret_type, scope_vars):
 
 def call_function(func, scope_vars):
     # go parameter by parameter and try to find a variable to pass as argument
-
     func_call = "{0}(".format(func["name"])
 
     # check if function takes 0 params
@@ -61,7 +60,12 @@ def check_return_type(func, ret_type):
     f_ret_types = func["ret_params"]
     
     # Only support functions of 1 return type for now
-    if (len(f_ret_types) == 1 and f_ret_types[0] == ret_type):
+    if (len(f_ret_types) != 1):
+        return False
+    
+    f_ret_type = f_ret_types[0].get("type", "sanity_check_inexistent_type")
+
+    if (f_ret_type == ret_type):
         return True
     else:
         return False

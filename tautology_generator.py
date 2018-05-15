@@ -94,6 +94,7 @@ class Tautology_Generator():
             T_vars = [v["name"] for v in self.variables.get(leaf_T, None)]
             # get all functions of this type 
             T_funcs = fc.prep_functions(self.functions, leaf_T, self.variables)
+            # combine variables and functions that we can insert into leaves
             T_atoms = list(set().union(T_vars, T_funcs))
             # do we have any variables or functions we could use in a leaf of that type
             if (T_atoms):

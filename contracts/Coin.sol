@@ -46,4 +46,23 @@ contract Coin {
         balances[receiver] += amount;
         emit Sent(msg.sender, receiver, amount);
     }
+    
+    function func(int pint, string pstring) public returns (bool) {
+        bool fbool = true;
+        if (fbool) {
+            for(uint i = 0; i < 5; i++) {
+                if (pint > 5) {
+                    bool a = false;
+                    continue;
+                } 
+                else {
+                    if (fbool || false) {
+                        continue;
+                    }
+                } 
+            }
+        }
+        
+        return fbool;
+    } 
 }
