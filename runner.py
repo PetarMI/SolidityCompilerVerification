@@ -9,6 +9,7 @@ expr_depth = 3
 blocks, functions = ast_walker.run_ast_walker(contract_file)
 
 print("\nFinding variables: ")
+print("{0} if statements".format(len(blocks)))
 ast_walker.pretty_print_blocks(blocks)
 
 print("\nFinding functions: ")

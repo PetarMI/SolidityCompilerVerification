@@ -64,6 +64,7 @@ def find_contract_funcs(contract):
 def parse_contract(contract):
     return parse_contract_aux(contract, [])
 
+# TODO this may use some refactoring cause it's ugly
 def parse_contract_aux(contract, visible_vars):
     blocks = []
 
@@ -90,22 +91,30 @@ def parse_contract_aux(contract, visible_vars):
             block = {"if" : node, "scope_vars" : copy_vars(scope_vars)}
             blocks.append(block)
 
-            # TODO add trueBody to find_nested_nodes
             if_body_blocks = parse_contract_aux(find_nested_nodes(node), scope_vars)
             if (if_body_blocks):
                 blocks.extend(if_body_blocks)
+        elif (node["nodeType"] == "ForStatement"):
+            # add the looping var and pass it as in-scope in the body of the for
+            init_node = ap.extract_var(node.get("initializationExpression", []))
+            # make the init variable visible only in the for loop body
+            for_vars = copy_vars(scope_vars)
+            for_vars.extend(find_vars([init_node]))
+
+            for_body_blocks = parse_contract_aux(find_nested_nodes(node), for_vars)
+            if (for_body_blocks):
+                blocks.extend(for_body_blocks)
 
     return blocks
 
 def find_nested_nodes(node):
     nodes = []
 
-    """ Just return a list of statements inside a node 
+    """ Auxiliary function to return a list of statements inside a node 
         supported nodes are 
         - function bodies
         - nested variable declarations 
         - TODO else statement bodies
-        - TODO For loops
     """
     func_body = node.get("body", None)
     infunc_var = node.get("declarations", None)
@@ -113,9 +122,10 @@ def find_nested_nodes(node):
 
     if(func_body != None):
         nodes.extend(func_body.get("statements", []))
-    elif(infunc_var != None):
-        nodes.extend(infunc_var)
-    elif(if_body != None):
+    """elif(infunc_var != None):
+        nodes.extend(infunc_var)"""
+    
+    if(if_body != None):
         nodes.extend(if_body.get("statements", []))
     
     return nodes
