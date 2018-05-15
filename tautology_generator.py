@@ -5,8 +5,10 @@ class Tautology_Generator():
 
     not_probability = 0.2
 
-    leafs = { True : ["{0} || true", "true || {0}"],
-              False : ["{0} && false", "false && {0}"] }
+    leaf_types = ["bool"]#, "int", "string", "array", "mapping"]
+
+    leafs = { "bool" : { True : ["{0} || true", "true || {0}"],
+                         False : ["{0} && false", "false && {0}"] } }
 
     true_variants = [{"left_expr" : True, "predicate" : " && ", "right_expr" : True}, 
                      {"left_expr" : True, "predicate" : " || ", "right_expr" : True},
@@ -72,40 +74,45 @@ class Tautology_Generator():
             return " (!" + true_expr + ")"
 
     def gen_leaf(self, bvalue):
-        if (decision(0.75)):
-            return get_literal(bvalue)
+        leaf_T, T_atoms = self.pick_leafs()
+
+        if (T_atoms):
+            var = random.choice(T_atoms)
         else:
-            leaf_expr = random.choice(self.leafs[bvalue])
-            bool_vars = self.variables.get("bool", None)
+            var = get_literal(bvalue)
 
-            # check if we actually have bool variables to use
-            if (bool_vars and len(bool_vars) > 0):
-                var = random.choice(bool_vars)["name"]
-            else:
-                var = get_literal(bvalue)
-            return "(" + leaf_expr.format(var) + ")" # leaf_expr.format(var)
+        leaf_expr = random.choice(self.leafs[leaf_T][bvalue])
 
-    def call_funcs(self):
-        func_calls = []
-        for t in ["uint", "int", "bool"]:
-            func_calls.extend(fc.prep_functions(self.functions, t, self.variables))
-        return func_calls
+        return "(" + leaf_expr.format(var) + ")"
+
+    def pick_leafs(self):
+        leaf_T = None
+
+        for i in range(1, 10):
+            leaf_T = random.choice(self.leaf_types)
+            # get all variables of this type (list comprehesnion to get just the names)
+            T_vars = [v["name"] for v in self.variables.get(leaf_T, None)]
+            # get all functions of this type 
+            T_funcs = fc.prep_functions(self.functions, leaf_T, self.variables)
+            T_atoms = list(set().union(T_vars, T_funcs))
+            # do we have any variables or functions we could use in a leaf of that type
+            if (T_atoms):
+                return leaf_T, T_atoms
+
+        return leaf_T, None
 
 def decision(prob):
     """generate something wih a certain probability"""
     return (random.random() > prob)
 
-def get_literal(bvalue):
+def get_literal(bvalue) -> str:
     if(bvalue):
-        return "true";
+        return "true"
     else:
         return "false"
 
 def run_generator(contract_vars, functions, depth):
     t_gen = Tautology_Generator(contract_vars, functions, depth)
     expr = t_gen.gen_tautology()
-    func_calls = t_gen.call_funcs()
-    # print("Available function calls:")
-    # print(func_calls)
 
     return expr

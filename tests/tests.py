@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0,'..')
 import tautology_generator as t_gen
 import random as rand
 
@@ -10,7 +12,7 @@ def do_tests():
     num_expr = 500
     depth = 10
 
-    tgen = t_gen.Tautology_Generator(var, depth)
+    tgen = t_gen.Tautology_Generator(var, [], depth)
 
     print("Testing true statements")
     for i in range(num_expr):
@@ -26,7 +28,7 @@ def do_tests():
     else: 
         print ("True tests NOT passed")
 
-    print("Testing true statements")
+    print("Testing false statements")
     for i in range(num_expr):
         expr = parse_solidity_expr(tgen.gen_expr(False, depth))
         res = eval(expr)

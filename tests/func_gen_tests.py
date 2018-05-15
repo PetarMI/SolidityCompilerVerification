@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0,'..')
 import function_caller as fc
 
 def test_empty1(): 
