@@ -1,14 +1,12 @@
 import random 
 import function_caller as fc
+import leaf_generator as lg
 
 class Tautology_Generator():
 
     not_probability = 0.2
 
     leaf_types = ["bool"]#, "int", "string", "array", "mapping"]
-
-    leafs = { "bool" : { True : ["{0} || true", "true || {0}"],
-                         False : ["{0} && false", "false && {0}"] } }
 
     true_variants = [{"left_expr" : True, "predicate" : " && ", "right_expr" : True}, 
                      {"left_expr" : True, "predicate" : " || ", "right_expr" : True},
@@ -81,7 +79,7 @@ class Tautology_Generator():
         else:
             var = get_literal(bvalue)
 
-        leaf_expr = random.choice(self.leafs[leaf_T][bvalue])
+        leaf_expr = lg.get_leaf(leaf_T, bvalue)
 
         return "(" + leaf_expr.format(var) + ")"
 
