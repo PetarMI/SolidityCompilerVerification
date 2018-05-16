@@ -3,13 +3,14 @@ import random
 class Ineq_Generator():
     # Class to generate random inequalities
 
-    def __init__(self,symbols_str_int, symbols, ops_str, nums, nums_length, variabs):
+    def __init__(self,symbols_str_int, symbols, ops_str, nums, nums_length, variabs, placeholderVal):
         self.symbols_str_int = symbols_str_int
         self.symbols = symbols
         self.ops_str=  ops_str
         self.nums = nums
         self.nums_length = nums_length
         self.variabs = variabs
+        self.placeholderVar = placeholderVal
 
     def gen_eq(self, type):
         '''generate an equation using one of the ops'''
@@ -40,7 +41,10 @@ class Ineq_Generator():
             if ("int" in self.variabs.keys()):
                 for variable in self.variabs['int']:
                     variables.append(variable['name'])
-            return variables
+            temp = self.placeholderVar
+            self.placeholderVar += 1
+            retVal = "{" + str(temp) + "}"
+            return [retVal]
 
     def gen_inequality(self, args):
         bool = args[0]
@@ -98,7 +102,9 @@ class Ineq_Generator():
             for variable in self.variabs['int']:
                 vars.append(variable['name'])
 
-        var = random.choice(vars)
+        var = "{" + str(self.placeholderVar) + "}"
+        self.placeholderVar += 1
+            #random.choice(vars)
 
         if bool:
             op = random.choice(self.ops_str)
@@ -148,13 +154,13 @@ def decision(prob):
         """generate something wih a certain probability"""
         return (random.random() > prob)
 
-def run_generator(variabs):
+def run_generator(variabs, bool):
     symbols_str_int = ['<', '>', '>=', '<=', '==']
     types = ["integers", "variables"]
     symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y), "<=": (lambda x, y: x <= y)}
     ops_str = ['+', '-', '/', '*']
     nums = []
-    bool = decision(0.5)
+    #bool = decision(0.5)
 
 
 
@@ -162,7 +168,7 @@ def run_generator(variabs):
         nums.append(random.randint(-100000, 100000))
     l = len(nums)
 
-    generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, variabs)
+    generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, variabs, 0)
 
     if ("uint" in variabs.keys() or "int" in variabs.keys()) :
         type = random.choice(types)
@@ -179,4 +185,4 @@ def run_generator(variabs):
         intExpr = generatorInt.gen_tautology([False, 2, "", 1, type])
         intExpr = "or " + intExpr
 
-    return intExpr# expr_var
+    return intExpr # expr_var
