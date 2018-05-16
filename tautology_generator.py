@@ -1,12 +1,9 @@
 import random 
-import function_caller as fc
-import leaf_generator as lg
+import leaf_generator as leaf_gen
 
 class Tautology_Generator():
 
     not_probability = 0.2
-
-    leaf_types = ["bool"]#, "int", "string", "array", "mapping"]
 
     true_variants = [{"left_expr" : True, "predicate" : " && ", "right_expr" : True}, 
                      {"left_expr" : True, "predicate" : " || ", "right_expr" : True},
@@ -72,33 +69,16 @@ class Tautology_Generator():
             return " (!" + true_expr + ")"
 
     def gen_leaf(self, bvalue):
-        leaf_T, T_atoms = self.pick_leafs()
+        leaf_T, T_atoms = leaf_gen.pick_leaf(self.variables, self.functions)
 
         if (T_atoms):
             var = random.choice(T_atoms)
         else:
             var = get_literal(bvalue)
 
-        leaf_expr = lg.get_leaf(leaf_T, bvalue)
+        leaf_expr = leaf_gen.get_leaf_skeleton(leaf_T, bvalue)
 
         return "(" + leaf_expr.format(var) + ")"
-
-    def pick_leafs(self):
-        leaf_T = None
-
-        for i in range(1, 10):
-            leaf_T = random.choice(self.leaf_types)
-            # get all variables of this type (list comprehesnion to get just the names)
-            T_vars = [v["name"] for v in self.variables.get(leaf_T, None)]
-            # get all functions of this type 
-            T_funcs = fc.prep_functions(self.functions, leaf_T, self.variables)
-            # combine variables and functions that we can insert into leaves
-            T_atoms = list(set().union(T_vars, T_funcs))
-            # do we have any variables or functions we could use in a leaf of that type
-            if (T_atoms):
-                return leaf_T, T_atoms
-
-        return leaf_T, None
 
 def decision(prob):
     """generate something wih a certain probability"""
