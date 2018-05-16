@@ -24,7 +24,7 @@ def get_source(block):
     return [int(split_source[0]), int(split_source[1])]
 
 def extract_var(node):
-    """ Get the VariableDeclaration node """
+    """ Get the VariableDeclaration out of a node """
     if (node["nodeType"] == "VariableDeclarationStatement"):
         for var_decl in node["declarations"]:
             if(var_decl["nodeType"] == "VariableDeclaration"):

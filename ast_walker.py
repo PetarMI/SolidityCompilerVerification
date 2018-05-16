@@ -79,7 +79,7 @@ def parse_contract_aux(contract, visible_vars):
             func_vars = copy_vars(scope_vars)
             func_vars.extend(find_vars(parameter_nodes))
             # keep searching inside the body of the function
-            func_body_blocks = parse_contract_aux(find_nested_nodes(node), func_vars)
+            func_body_blocks = parse_contract_aux(find_nested_nodes(node, "func"), func_vars)
             if (func_body_blocks):
                 blocks.extend(func_body_blocks)
         if (node["nodeType"] == "VariableDeclaration" or node["nodeType"] == "VariableDeclarationStatement"):
@@ -91,47 +91,59 @@ def parse_contract_aux(contract, visible_vars):
             block = {"if" : node, "scope_vars" : copy_vars(scope_vars)}
             blocks.append(block)
 
-            if_body_blocks = parse_contract_aux(find_nested_nodes(node), scope_vars)
+            if_body_blocks = parse_contract_aux(find_nested_nodes(node, "if"), scope_vars)
             if (if_body_blocks):
                 blocks.extend(if_body_blocks)
+
+            else_body_blocks = parse_contract_aux(find_nested_nodes(node, "else"), scope_vars)
+            if (else_body_blocks):
+                blocks.extend(else_body_blocks)
         elif (node["nodeType"] == "ForStatement"):
             # add the looping var and pass it as in-scope in the body of the for
-            init_node = ap.extract_var(node.get("initializationExpression", []))
-            # make the init variable visible only in the for loop body
-            for_vars = copy_vars(scope_vars)
-            for_vars.extend(find_vars([init_node]))
+            init_node = node.get("initializationExpression", None)
+            if (init_node):
+                init_var = ap.extract_var(init_node)
+                # make the init variable visible only in the for loop body
+                for_vars = copy_vars(scope_vars)
+                for_vars.extend(find_vars([init_var]))
 
-            for_body_blocks = parse_contract_aux(find_nested_nodes(node), for_vars)
+            for_body_blocks = parse_contract_aux(find_nested_nodes(node, "for"), for_vars)
             if (for_body_blocks):
                 blocks.extend(for_body_blocks)
 
     return blocks
 
-def find_nested_nodes(node):
+def find_nested_nodes(node, node_type):
     nodes = []
 
     """ Auxiliary function to return a list of statements inside a node 
         supported nodes are 
         - function bodies
-        - nested variable declarations 
-        - TODO else statement bodies
+        - if and else bodies
+        - for loop bodies
     """
-    func_body = node.get("body", None)
-    infunc_var = node.get("declarations", None)
-    if_body = node.get("trueBody", None)
+    if (node_type == "func" or node_type == "for"):
+        func_body = node.get("body", None)
 
-    if(func_body != None):
-        nodes.extend(func_body.get("statements", []))
-    """elif(infunc_var != None):
-        nodes.extend(infunc_var)"""
-    
-    if(if_body != None):
-        nodes.extend(if_body.get("statements", []))
+        if(func_body):
+            nodes.extend(func_body.get("statements", []))
+
+    elif (node_type == "if"):
+        if_body = node.get("trueBody", None)
+        
+        if(if_body != None):
+            nodes.extend(if_body.get("statements", []))
+
+    elif (node_type == "else"):
+        else_body = node.get("falseBody", None)
+        
+        if(else_body != None):
+            nodes.extend(else_body.get("statements", []))
     
     return nodes
 
 def find_vars(nodes):
-    """ Extracts the variable from the node and parses it """
+    """ Parses VariableDeclaration nodes to format all vars into a dictionary """
     variables = []
 
     for var_node in nodes:
