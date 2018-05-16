@@ -35,12 +35,12 @@ class Ineq_Generator():
         else:
             variables = []
 
-            if ("uint" in self.variabs.keys()):
-                for variable in self.variabs['uint']:
-                    variables.append(variable['name'])
-            if ("int" in self.variabs.keys()):
-                for variable in self.variabs['int']:
-                    variables.append(variable['name'])
+            #if ("uint" in self.variabs.keys()):
+             #   for variable in self.variabs['uint']:
+              #      variables.append(variable['name'])
+            #if ("int" in self.variabs.keys()):
+             #   for variable in self.variabs['int']:
+              #      variables.append(variable['name'])
             temp = self.placeholderVar
             self.placeholderVar += 1
             retVal = "{" + str(temp) + "}"
@@ -94,13 +94,13 @@ class Ineq_Generator():
         eq1, val1 = self.gen_eq("integers")
         eq2, val2 = self.gen_eq("integers")
         bool = args[0]
-        print(self.variabs.keys())
-        if ("uint" in self.variabs.keys()):
-            for variable in self.variabs['uint']:
-                vars.append(variable['name'])
-        if ("int" in self.variabs.keys()):
-            for variable in self.variabs['int']:
-                vars.append(variable['name'])
+        #print(self.variabs.keys())
+        #if ("uint" in self.variabs.keys()):
+         #   for variable in self.variabs['uint']:
+          #      vars.append(variable['name'])
+        #if ("int" in self.variabs.keys()):
+         #   for variable in self.variabs['int']:
+          #      vars.append(variable['name'])
 
         var = "{" + str(self.placeholderVar) + "}"
         self.placeholderVar += 1
@@ -124,7 +124,8 @@ class Ineq_Generator():
         curr_type = args[4]
         depth = random.randint(1, 3)
         args[3] = depth
-        if all (k in self.variabs.keys() for k in ("uint","int")):
+        #if all (k in self.variabs.keys() for k in ("uint","int")):
+        if self.variabs:
             func_list = [self.gen_tautology, self.gen_inequality, self.var_with_expression]
         else:
             func_list = [self.gen_tautology, self.gen_inequality]
@@ -132,7 +133,8 @@ class Ineq_Generator():
         pred_list = [" and ", " or "]
         types = ["integers", "variables"]
 
-        if ("uint" in self.variabs.keys() or "int" in self.variabs.keys()) :
+        #if ("uint" in self.variabs.keys() or "int" in self.variabs.keys()) :
+        if self.variabs:
             args[4] = random.choice(types)
         else:
             args[4] = "integers"
@@ -154,7 +156,7 @@ def decision(prob):
         """generate something wih a certain probability"""
         return (random.random() > prob)
 
-def run_generator(variabs, bool):
+def run_generator(varExists, bool):
     symbols_str_int = ['<', '>', '>=', '<=', '==']
     types = ["integers", "variables"]
     symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y), "<=": (lambda x, y: x <= y)}
@@ -168,9 +170,9 @@ def run_generator(variabs, bool):
         nums.append(random.randint(-100000, 100000))
     l = len(nums)
 
-    generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, variabs, 0)
+    generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, varExists, 0)
 
-    if ("uint" in variabs.keys() or "int" in variabs.keys()) :
+    if (varExists) :
         type = random.choice(types)
         #expr_var = generatorInt.var_with_expression(bool)
         #print(expr_var)
@@ -185,4 +187,4 @@ def run_generator(variabs, bool):
         intExpr = generatorInt.gen_tautology([False, 2, "", 1, type])
         intExpr = "or " + intExpr
 
-    return intExpr # expr_var
+    return intExpr, generatorInt.placeholderVar # expr_var

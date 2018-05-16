@@ -1,4 +1,5 @@
 import random
+import ineq_gen
 import function_caller as fc
 
 leaf_types = ["bool"]#, "int", "string", "array", "mapping"]
@@ -9,6 +10,8 @@ all_leaves = { "bool" : { True : ["{0} || true", "true || {0}"],
 def get_leaf_skeleton(leaf_T, bvalue):
     leaves = all_leaves.get(leaf_T, None)
 
+    if leaf_T == "uint" or leaf_T == "int":
+        leaves = ineq_gen.run_generator(True, bvalue)
     # sanity check
     if (not leaves):
         raise ValueError("No leaves of the following type")
