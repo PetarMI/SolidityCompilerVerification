@@ -2,10 +2,20 @@ import random
 import ineq_gen
 import function_caller as fc
 
-leaf_types = ["bool", "int"]#, "string", "array", "mapping"]
+leaf_types = ["bool", "string", "array"]#, "mapping"]
 
-all_leaves = { "bool" : { True : ["{0} || true", "true || {0}"],
-                          False : ["{0} && false", "false && {0}"] } }
+all_leaves = {  "bool" : { 
+                    True : ["{0} || true", "true || {0}"],
+                    False : ["{0} && false", "false && {0}"] 
+                },
+                "string" : { 
+                    True : ["keccak256({0}) == keccak256({0})"],
+                    False : ["keccak256({0}) != keccak256({0})"]
+                },
+                "array" : {
+                    True : ["int({0}.length) > -1", "-1 < int({0}.length)"],
+                    False : ["int({0}.length) < -1", "-1 > int({0}.length)"]
+                } }
 
 def get_leaf_skeleton(leaf_T, bvalue):
     leaves = all_leaves.get(leaf_T, None)

@@ -4,8 +4,9 @@ import ast_parser as aparse
 
 class Mutator():
 
-    def __init__(self, seed_contract, blocks, expr_depth):
+    def __init__(self, seed_contract, blocks, functions, expr_depth):
         self.blocks = blocks
+        self.functions = functions
         self.expr_depth = expr_depth
         # path stuff
         self.contract_dir = "contracts/"
@@ -50,7 +51,7 @@ class Mutator():
     def gen_tautology(self, scope_vars):
         """External function
         Generate the tautology we will insert in the if condition"""
-        return t_gen.run_generator(scope_vars, self.expr_depth)
+        return t_gen.run_generator(scope_vars, self.functions, self.expr_depth)
 
     def do_mutation(self):
         mutants = 0
@@ -63,6 +64,6 @@ def decision():
     """mutate every line with 66% probability"""
     return random.random() > 0.33
 
-def run_mutator(seed_contract, blocks, depth):
-    mutator = Mutator(seed_contract, blocks, depth)
+def run_mutator(seed_contract, blocks, functions, depth):
+    mutator = Mutator(seed_contract, blocks, functions, depth)
     mutator.do_mutation()

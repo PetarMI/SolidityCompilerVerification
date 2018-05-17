@@ -16,7 +16,7 @@ print("\nFinding functions: ")
 ast_walker.pretty_print_functions(functions)
 
 """print("\nRunning inequality generator. OUTPUT:")
-in_eq,var_eq = ineq_gen.run_generator(all_vars)
+in_eq,var_eq = ineq_gen.run_generator(blocks, True)
 print(in_eq)
 print("=======================================================================================================================================")
 print("With vars:")
@@ -29,4 +29,4 @@ for b in blocks:
 	expr = tautology_generator.run_generator(scope_vars, functions, expr_depth)
 	print(expr)
 
-# mutator.run_mutator(contract_file, blocks, expr_depth)
+# mutator.run_mutator(contract_file, blocks, functions, expr_depth)
