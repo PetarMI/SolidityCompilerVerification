@@ -74,6 +74,7 @@ class Tautology_Generator():
 
         atoms = []
 
+        #TODO may need different approach
         if (T_atoms):
             for i in range(var_slots):
                 atoms.append(random.choice(T_atoms))

@@ -30,7 +30,8 @@ class Mutator():
                 mutated_contract += code_block
                 
                 if (decision()):
-                    mutated_contract += (self.gen_tautology(block["scope_vars"]))
+                    # generate a tautology for this if statement condition
+                    mutated_contract += (self.gen_tautology(block))
                     mutated = True
             
             #read rest of file
@@ -48,10 +49,15 @@ class Mutator():
         with open(mutant_name, 'w') as f:
             f.write(mutant)
 
-    def gen_tautology(self, scope_vars):
-        """External function
-        Generate the tautology we will insert in the if condition"""
-        return t_gen.run_generator(scope_vars, self.functions, self.expr_depth)
+    def gen_tautology(self, block):
+        scope_vars = block.get("scope_vars", [])
+        func_name = block.get("func_name", "")
+
+        # remove a function from list of available functions to avoid recursion
+        funcs_no_rec = [f for f in self.functions if f["name"] != func_name]
+
+        """ External function to generate the tautology we will insert in the if condition """
+        return t_gen.run_generator(scope_vars, funcs_no_rec, self.expr_depth)
 
     def do_mutation(self):
         mutants = 0

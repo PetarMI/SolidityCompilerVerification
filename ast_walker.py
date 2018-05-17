@@ -62,10 +62,21 @@ def find_contract_funcs(contract):
     return functions
 
 def parse_contract(contract):
-    return parse_contract_aux(contract, [])
+    return parse_contract_aux(contract, [], "")
 
 # TODO this may use some refactoring cause it's ugly
-def parse_contract_aux(contract, visible_vars):
+def parse_contract_aux(contract, visible_vars, func_name):
+    """ Find all if blocks in the contract
+
+    @param: contract All nodes in the contract
+    @param: visible_vars The visible vars at this level
+    @param: func_name What function we are in right now
+    
+    @returns: list of blocks of the type
+              { "if" : <if_stat>,
+                "scope_vars" : <variable in scope for that if node>,
+                "func_name" : <name of the function we are currently in> }
+    """
     blocks = []
 
     scope_vars = copy_vars(visible_vars)
@@ -78,8 +89,12 @@ def parse_contract_aux(contract, visible_vars):
             # hide the function parameters from the rest of the functions
             func_vars = copy_vars(scope_vars)
             func_vars.extend(find_vars(parameter_nodes))
+
+            # note we are inside a certain function
+            func_name = node["name"]
+
             # keep searching inside the body of the function
-            func_body_blocks = parse_contract_aux(find_nested_nodes(node, "func"), func_vars)
+            func_body_blocks = parse_contract_aux(find_nested_nodes(node, "func"), func_vars, func_name)
             if (func_body_blocks):
                 blocks.extend(func_body_blocks)
         if (node["nodeType"] == "VariableDeclaration" or node["nodeType"] == "VariableDeclarationStatement"):
@@ -88,14 +103,14 @@ def parse_contract_aux(contract, visible_vars):
         # check the bodies of all if statements
         elif (node["nodeType"] == "IfStatement"):
             # create a new block consisting of if statement, the visible vars and more nested blocks
-            block = {"if" : node, "scope_vars" : copy_vars(scope_vars)}
+            block = {"if" : node, "scope_vars" : copy_vars(scope_vars), "func_name" : func_name}
             blocks.append(block)
 
-            if_body_blocks = parse_contract_aux(find_nested_nodes(node, "if"), scope_vars)
+            if_body_blocks = parse_contract_aux(find_nested_nodes(node, "if"), scope_vars, func_name)
             if (if_body_blocks):
                 blocks.extend(if_body_blocks)
 
-            else_body_blocks = parse_contract_aux(find_nested_nodes(node, "else"), scope_vars)
+            else_body_blocks = parse_contract_aux(find_nested_nodes(node, "else"), scope_vars, func_name)
             if (else_body_blocks):
                 blocks.extend(else_body_blocks)
         elif (node["nodeType"] == "ForStatement"):
@@ -107,7 +122,7 @@ def parse_contract_aux(contract, visible_vars):
                 for_vars = copy_vars(scope_vars)
                 for_vars.extend(find_vars([init_var]))
 
-            for_body_blocks = parse_contract_aux(find_nested_nodes(node, "for"), for_vars)
+            for_body_blocks = parse_contract_aux(find_nested_nodes(node, "for"), for_vars, func_name)
             if (for_body_blocks):
                 blocks.extend(for_body_blocks)
 
@@ -165,6 +180,7 @@ def copy_vars(variables):
 def pretty_print_blocks(blocks):
     for block in blocks:
         print(block["if"]["src"])
+        print("In function {0}".format(block["func_name"]))
         for k, v in block["scope_vars"].items():
             sys.stdout.write(k + " : ")
             for var in v:

@@ -35,6 +35,7 @@ def get_leaf_skeleton(leaf_T, bvalue):
 def pick_leaf(variables, functions):
     leaf_T = None
 
+    # TODO may need different approach
     for i in range(1, 10):
         leaf_T = random.choice(leaf_types)
         # get all variables of this type (list comprehesnion to get just the names)
