@@ -70,15 +70,17 @@ class Tautology_Generator():
 
     def gen_leaf(self, bvalue):
         leaf_T, T_atoms = leaf_gen.pick_leaf(self.variables, self.functions)
+        leaf_expr, var_slots = leaf_gen.get_leaf_skeleton(leaf_T, bvalue)
+
+        atoms = []
 
         if (T_atoms):
-            var = random.choice(T_atoms)
+            for i in range(var_slots):
+                atoms.append(random.choice(T_atoms))
         else:
-            var = get_literal(bvalue)
+            atoms = [get_literal(bvalue)] * var_slots
 
-        leaf_expr = leaf_gen.get_leaf_skeleton(leaf_T, bvalue)
-
-        return "(" + leaf_expr.format(var) + ")"
+        return "(" + leaf_expr.format(*atoms) + ")"
 
 def decision(prob):
     """generate something wih a certain probability"""
