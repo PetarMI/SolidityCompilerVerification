@@ -3,7 +3,7 @@ import random
 class Ineq_Generator():
     # Class to generate random inequalities
 
-    def __init__(self,symbols_str_int, symbols, ops_str, nums, nums_length, variabs, placeholderVal):
+    def __init__(self,symbols_str_int, symbols, ops_str, nums, nums_length, variabs, placeholderVal, leaf_T):
         self.symbols_str_int = symbols_str_int
         self.symbols = symbols
         self.ops_str=  ops_str
@@ -11,7 +11,7 @@ class Ineq_Generator():
         self.nums_length = nums_length
         self.variabs = variabs
         self.placeholderVar = placeholderVal
-
+        self.leaf_T = leaf_T
     def gen_eq(self, type):
         '''generate an equation using one of the ops'''
         if type is "integers":
@@ -61,9 +61,9 @@ class Ineq_Generator():
                 symbol = symbols_str[random.randint(0, length_sym-1)]
             else:
                 if bool:
-                    symbols_str = self.symbols_str_int[2:4]
+                    symbols_str = self.symbols_str_int[2:5]
                 else:
-                    symbols_str = self.symbols_str_int[0:1]
+                    symbols_str = self.symbols_str_int[0:2]
 
                 length_sym = len(symbols_str)
                 symbol = symbols_str[random.randint(0, length_sym - 1)]
@@ -156,7 +156,7 @@ def decision(prob):
         """generate something wih a certain probability"""
         return (random.random() > prob)
 
-def run_generator(varExists, bool):
+def run_generator(varExists, bool, leaf_T):
     symbols_str_int = ['<', '>', '>=', '<=', '==']
     types = ["integers", "variables"]
     symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y), "<=": (lambda x, y: x <= y)}
@@ -167,10 +167,13 @@ def run_generator(varExists, bool):
 
 
     for i in range(10):
-        nums.append(random.randint(-100000, 100000))
+        if leaf_T == "uint":
+            nums.append(random.randint(0, 100000))
+        else:
+            nums.append(random.randint(-100000, 100000))
     l = len(nums)
 
-    generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, varExists, 0)
+    generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, varExists, 0, leaf_T)
 
     if (varExists) :
         type = random.choice(types)
