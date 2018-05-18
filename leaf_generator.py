@@ -2,7 +2,8 @@ import random
 import ineq_gen
 import function_caller as fc
 
-leaf_types = ["bool", "int", "uint", "string", "array"]#, "mapping"]
+# leaf_types = ["bool", "int", "uint", "string", "array"]#, "mapping"]
+leaf_types = ["bool"]#, "string", "array"]#, "mapping"]
 
 all_leaves = {  "bool" : { 
                     True : ["{0} || true", "true || {0}"],
@@ -18,6 +19,15 @@ all_leaves = {  "bool" : {
                 } }
 
 def get_leaf_skeleton(leaf_T, bvalue):
+    """ Return a sekeleton for a leaf expression
+
+        @param leaf_T The type of variables to be used in that leaf
+        @param bvalue The boolean value of the expression
+    
+        Returns
+            expr The skeleton of the expression with placeholders for the atoms
+            var_slots How many variables should be inserted in the expression
+    """
     leaves = all_leaves.get(leaf_T, None)
 
     if leaf_T == "uint" or leaf_T == "int":
@@ -33,6 +43,15 @@ def get_leaf_skeleton(leaf_T, bvalue):
     return leaf_expr, 1
 
 def pick_leaf(variables, functions):
+    """ Pick a type of variable used in leaf based on available vars
+        
+        @param variables The available variables for the leaf
+        @param functions The available functions for the leaf
+
+        Returns
+            leaf_T: The type of variable to be used in the leaf
+            T_atoms: Atoms available to be used 
+    """
     leaf_T = None
 
     # TODO may need different approach
@@ -41,10 +60,10 @@ def pick_leaf(variables, functions):
         # get all variables of this type (list comprehesnion to get just the names)
         available_vars = variables.get(leaf_T, None)
 
-        if (not available_vars):
-            continue
+        T_vars = []
+        if (available_vars):
+            T_vars = [v["name"] for v in available_vars]            
 
-        T_vars = [v["name"] for v in available_vars]
         # get all functions of this type 
         T_funcs = fc.prep_functions(functions, leaf_T, variables)
         # combine variables and functions that we can insert into leaves
