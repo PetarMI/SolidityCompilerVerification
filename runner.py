@@ -33,5 +33,5 @@ def run_gen_sep():
 
 run_gen_sep()
 
-# mutator.run_mutator(contract_file, blocks, functions, expr_depth)
+mutator.run_mutator(contract_file, blocks, functions, expr_depth)
 
