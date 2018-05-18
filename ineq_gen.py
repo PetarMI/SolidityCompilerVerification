@@ -130,7 +130,7 @@ class Ineq_Generator():
         else:
             func_list = [self.gen_tautology, self.gen_inequality]
 
-        pred_list = [" and ", " or "]
+        pred_list = [" && ", " || "]
         types = ["integers", "variables"]
 
         #if ("uint" in self.variabs.keys() or "int" in self.variabs.keys()) :
@@ -182,9 +182,9 @@ def run_generator(varExists, bool):
 
     if bool:
         intExpr = generatorInt.gen_tautology([True, 2, "", 1, type])
-        intExpr = "and " + intExpr
+        #intExpr = "and " + intExpr
     else:
         intExpr = generatorInt.gen_tautology([False, 2, "", 1, type])
-        intExpr = "or " + intExpr
+        #intExpr = "or " + intExpr
 
     return intExpr, generatorInt.placeholderVar # expr_var
