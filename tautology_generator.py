@@ -15,9 +15,9 @@ class Tautology_Generator():
                       {"left_expr" : False, "predicate" : " && ", "right_expr" : False},
                       {"left_expr" : False, "predicate" : " || ", "right_expr" : False}]
 
-    def __init__(self, scope_vars, functions, expr_depth):
-        self.variables = scope_vars
-        self.functions = functions
+    def __init__(self, block, expr_depth):
+        self.variables = block["scope_vars"]
+        self.functions = block["funcs"]
         self.depth = expr_depth
 
     def gen_tautology(self):
@@ -100,8 +100,8 @@ def get_literal(bvalue) -> str:
     else:
         return "false"
 
-def run_generator(contract_vars, functions, depth):
-    t_gen = Tautology_Generator(contract_vars, functions, depth)
+def run_generator(block, depth):
+    t_gen = Tautology_Generator(block, depth)
     expr = t_gen.gen_tautology()
 
     return expr

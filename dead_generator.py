@@ -3,12 +3,13 @@ import tautology_generator as t_gen
 
 class Dead_Generator():
 
-    structs = [ "\nif({0}) {{ \n\t// *** Generated *** \n\t{1}\n}}",
-                "\nwhile({0}) {{ \n\t// *** Generated *** \n\t{1}\n}}" ]
+    structs = [ "\nif({0}) {{ \n\t\t// *** Generated *** \n\t{1}\n}}",
+                "\nwhile({0}) {{ \n\t\t// *** Generated *** \n\t{1}\n}}" ]
 
-    def __init__(self, scope_vars, functions, expr_depth):
-        self.variables = scope_vars
-        self.functions = functions
+    def __init__(self, block, expr_depth):
+        self.block = block
+        self.variables = self.block["scope_vars"]
+        self.functions = self.block["funcs"]
         self.depth = expr_depth
 
     def gen_dead_block(self):
@@ -27,13 +28,13 @@ class Dead_Generator():
         """ Generate a false statement to insert in the if/while condition block
             Call the external module Tautology_Generator for that
         """
-        tg = t_gen.Tautology_Generator(self.variables, self.functions, self.depth)
+        tg = t_gen.Tautology_Generator(self.block, self.depth)
         cond = tg.gen_condition(False)
 
         return cond
 
-def run_generator(contract_vars, functions, depth):
-    dc_gen = Dead_Generator(contract_vars, functions, depth)
+def run_generator(block, depth):
+    dc_gen = Dead_Generator(block, depth)
     expr = dc_gen.gen_dead_block()
 
     return expr

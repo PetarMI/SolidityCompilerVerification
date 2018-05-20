@@ -6,9 +6,8 @@ import operator
 
 class Mutator():
 
-    def __init__(self, seed_contract, blocks, functions, expr_depth):
+    def __init__(self, seed_contract, blocks, expr_depth):
         self.blocks = blocks
-        self.functions = functions
         self.expr_depth = expr_depth
         # path stuff
         self.contract_dir = "contracts/"
@@ -51,8 +50,7 @@ class Mutator():
             Returns:
                 list of mutation dicts
                 [ { "code" : <mutation_string>,
-                    "src" : { "offset" : x,
-                              "length" : y} } } ]
+                    "offset" : x } ]
         """
         mutations = []
 
@@ -89,17 +87,11 @@ class Mutator():
             Returns:
                 code : string containing the code block
         """
-        scope_vars = block.get("scope_vars", [])
-        func_name = block.get("func_name", "")
-
-        # remove a function from list of available functions to avoid recursion
-        funcs_no_rec = [f for f in self.functions if f["name"] != func_name]
-
         if(stat_type == "tautology"):
             """ External function to generate the tautology we will insert in the if condition """
-            code = t_gen.run_generator(scope_vars, funcs_no_rec, self.expr_depth)
+            code = t_gen.run_generator(block, self.expr_depth)
         elif (stat_type == "dead code"):
-            code = dc_gen.run_generator(scope_vars, funcs_no_rec, self.expr_depth)
+            code = dc_gen.run_generator(block, self.expr_depth)
         else:
             raise KeyError("Attempting to generate unknown block in Mutator")
 
@@ -120,6 +112,6 @@ def decision():
     """mutate every line with 66% probability"""
     return random.random() > 0.5
 
-def run_mutator(seed_contract, blocks, functions, depth):
-    mutator = Mutator(seed_contract, blocks, functions, depth)
+def run_mutator(seed_contract, blocks, depth):
+    mutator = Mutator(seed_contract, blocks, depth)
     mutator.do_mutation()

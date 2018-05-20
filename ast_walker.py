@@ -4,7 +4,7 @@ import sys
 
 contract_dir = "contracts/"
 ast_extension = ".json"
-test_file = "Coin"
+test_file = "WhiteList"
 
 def import_ast(ast_file):
     """Takes the .json produced by Truffle and extracts just the ast"""
@@ -13,28 +13,33 @@ def import_ast(ast_file):
     return ast
 
 def find_contract_defs(ast):
-    """Find all statements inside a contract.
+    """ Find all contracts inside an ast file.
 
-    Raises:
-    ValueError if there is nothing in the contract
+        Returns:
+        contracts: [ { "name" : <contract_name>,
+                       "contents" : [<statements in contract>] } ]
     """
     all_nodes = ast["nodes"]
+    contracts = []
 
     for node in all_nodes:
+        contract = {}
+        
         if (node["nodeType"] == "ContractDefinition"):
-            contract_contents = node.get("nodes", None)
-            break
+            contract["name"] = node["name"]
+            contract_statements = node.get("nodes", None)
 
-    if (contract_contents != None):
-        return contract_contents
-    else:
-        raise ValueError("Empty contract provided.")
+            if (contract_statements):
+                contract["contents"] = contract_statements
+                contracts.append(contract)
+
+    return contracts
 
 def find_contract_funcs(contract):
     """ Find all functions in the contract.
         Return a list of the sort:
         [ {
-            "f_name" : "<name>"
+            "name" : "<name>"
             "params" : list of variables as parsed by parse_variable in ast_parser
             "return_type" : "<return type>"    
           }, ...
@@ -44,6 +49,11 @@ def find_contract_funcs(contract):
 
     for node in contract:
         if (node["nodeType"] == "FunctionDefinition"):
+
+            # check if it can be used within contract
+            if (node.get("visibility", None) == "external"):
+                continue
+            
             function = {}
             function["name"] = node["name"]
             
@@ -61,8 +71,36 @@ def find_contract_funcs(contract):
 
     return functions
 
-def parse_contract(contract):
-    return parse_contract_aux(contract, [], "")
+def parse_contracts(contracts):
+    """ Parse all contracts in the .sol file 
+        
+        @param: result from find_contract_defs
+
+        Returns:
+            all_blocks A flat list of all blocks found in the .sol file
+            { "if" : <if_stat>,
+              "scope_vars" : <variable in scope for that if node>,
+              "funcs : <list of available functions to use"
+              "func_name" : <name of the function we are currently in> }
+    """
+    all_blocks = []
+
+    for contract in contracts:
+        contract_contents = contract["contents"]
+
+        # find functions and blocks (if statements) in a particular contract
+        contract_funcs = find_contract_funcs(contract_contents)
+        contract_blocks = parse_contract_aux(contract_contents, [], "")
+
+        # add the lost of available functions to each block
+        for block in contract_blocks:
+            funcs_no_rec = [f for f in contract_funcs if f["name"] != block["func_name"]]
+            block["funcs"] = funcs_no_rec
+
+        contract_blocks = ap.preprocess_blocks(contract_blocks)
+        all_blocks.extend(contract_blocks)
+
+    return all_blocks
 
 # TODO this may use some refactoring cause it's ugly
 def parse_contract_aux(contract, visible_vars, func_name):
@@ -179,14 +217,17 @@ def copy_vars(variables):
 
 def pretty_print_blocks(blocks):
     for block in blocks:
-        print(block["if"]["src"])
-        print("In function {0}".format(block["func_name"]))
+        print("If statement in function: {0}".format(block["func_name"]))
+        print("Available variables")
         for k, v in block["scope_vars"].items():
             sys.stdout.write(k + " : ")
             for var in v:
                 sys.stdout.write(var["name"] + ", ")
             print()
-        print()
+        print("Available functions")
+        for f in block["funcs"]:
+            sys.stdout.write(f["name"] + ", ")
+        print("\n\n")
 
 def pretty_print_functions(functions):
     for func in functions:
@@ -200,19 +241,26 @@ def pretty_print_functions(functions):
             sys.stdout.write(return_param["type"] + ", ")
         print()
 
+def pretty_print_contracts(contracts):
+	for contract in contracts:
+		print(contract["name"])
+
 def run_ast_walker(ast_file):
-    """Parameter: Just the base name of the ast we are exploring"""
+    """ 
+        @param: ast_file Just the base name of the ast we are exploring 
+        
+        Returns: 
+            blocks A flat list of all blocks in the .sol file
+    """
     ast = import_ast(ast_file)
-    contract = find_contract_defs(ast)
+    contracts = find_contract_defs(ast)
 
-    functions = find_contract_funcs(contract)
+    pretty_print_contracts(contracts)
 
-    blocks = parse_contract(contract)
-    blocks = ap.preprocess_blocks(blocks)
+    blocks = parse_contracts(contracts)
     
     # pretty_print_blocks(blocks)
-    # pretty_print_functions(functions)
-
-    return blocks, functions
+   
+    return blocks
     
-run_ast_walker(test_file)
+# run_ast_walker(test_file)

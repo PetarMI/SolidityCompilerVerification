@@ -4,17 +4,11 @@ import ineq_gen
 import tautology_generator
 import dead_generator
 
-contract_file = "Coin"
+contract_file = "WhiteList"
 expr_depth = 3
 
-blocks, functions = ast_walker.run_ast_walker(contract_file)
-    
-print("\nFinding variables: ")
-print("{0} if statements".format(len(blocks)))
+blocks = ast_walker.run_ast_walker(contract_file)
 ast_walker.pretty_print_blocks(blocks)
-
-print("\nFinding functions: ")
-ast_walker.pretty_print_functions(functions)
 
 """print("\nRunning inequality generator. OUTPUT:")
 in_eq,var_eq = ineq_gen.run_generator(blocks, True)
@@ -26,23 +20,17 @@ print(var_eq)"""
 def run_gen_sep(): 
     print("\nRunning boolean generator. OUTPUT:")
     for b in blocks:
-        scope_vars = b["scope_vars"]
-        funcs_no_rec = [f for f in functions if f["name"] != b["func_name"]]
-        #print("if statement in function {0}".format(b["func_name"]))
-        expr = tautology_generator.run_generator(scope_vars, funcs_no_rec, expr_depth)
-        #print(expr)
-
-run_gen_sep()
+        expr = tautology_generator.run_generator(b, expr_depth)
+        print(expr)
 
 def run_code_gen_sep():
     for b in blocks:
-        scope_vars = b["scope_vars"]
-        funcs_no_rec = [f for f in functions if f["name"] != b["func_name"]]
-        #print("dead code in function {0}".format(b["func_name"]))
-        expr = dead_generator.run_generator(scope_vars, funcs_no_rec, 2)
-        #print(expr)
+        expr = dead_generator.run_generator(b, 2)
+        print(expr)
 
-run_code_gen_sep()
+"""run_gen_sep()
+print()
+run_code_gen_sep()"""
 
-mutator.run_mutator(contract_file, blocks, functions, expr_depth)
+mutator.run_mutator(contract_file, blocks, expr_depth)
 
