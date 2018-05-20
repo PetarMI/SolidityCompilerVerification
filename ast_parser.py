@@ -17,7 +17,7 @@ supported_types = {
 }
 
 #TODO sort them
-def get_source(block, part):
+def get_source(block):
     """ Get the source of a code block
 
         @param: block The if statement whose source we want 
@@ -29,10 +29,10 @@ def get_source(block, part):
     """
     raw_src = ""
 
-    if (part == "body"):
-        raw_src = block["if"]["src"]
-    elif (part == "condition"): 
+    if (block.get("if", None)):
         raw_src = block["if"]["condition"]["src"]
+    elif (block.get("return", None)): 
+        raw_src = block["return"]["src"]
     else:
         raise KeyError("Asking for the source of unknown contract block")
 
@@ -136,6 +136,18 @@ def parse_composite_types(var, var_type):
             return None
 
     return var_info
+
+def get_specific_blocks(blocks, bl_type):
+    """ Dirty fucntion used only for testing purposes in runner 
+        Return only the if/return blocks
+    """
+    specific_blocks = []
+
+    for b in blocks:
+        if (b.get(bl_type, None)):
+            specific_blocks.append(b)
+
+    return specific_blocks
 
 def infer_type(raw_type):
     return supported_types.get(raw_type, None)

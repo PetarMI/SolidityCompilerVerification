@@ -3,8 +3,8 @@ import tautology_generator as t_gen
 
 class Dead_Generator():
 
-    structs = [ "\nif({0}) {{ \n\t\t// *** Generated *** \n\t{1}\n}}",
-                "\nwhile({0}) {{ \n\t\t// *** Generated *** \n\t{1}\n}}" ]
+    structs = [ "\nif({0}) {{ \n\t\t// *** Generated *** \n\t{1}\n}}\n",
+                "\nwhile({0}) {{ \n\t\t// *** Generated *** \n\t{1}\n}}\n" ]
 
     def __init__(self, block, expr_depth):
         self.block = block

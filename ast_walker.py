@@ -163,6 +163,9 @@ def parse_contract_aux(contract, visible_vars, func_name):
             for_body_blocks = parse_contract_aux(find_nested_nodes(node, "for"), for_vars, func_name)
             if (for_body_blocks):
                 blocks.extend(for_body_blocks)
+        elif (node["nodeType"] == "Return"):
+            block = {"return" : node, "scope_vars" : copy_vars(scope_vars), "func_name" : func_name}
+            blocks.append(block)
 
     return blocks
 
@@ -216,18 +219,24 @@ def copy_vars(variables):
     return scope_vars
 
 def pretty_print_blocks(blocks):
+    print ("Total of {0} blocks".format(len(blocks)))
+
     for block in blocks:
-        print("If statement in function: {0}".format(block["func_name"]))
-        print("Available variables")
+        if (block.get("if", None)):
+            stat = "If"
+        else:
+            stat = "Return"
+        print("{0} statement in function: {1}:".format(stat, block["func_name"]))
+        print("Available variables:")
         for k, v in block["scope_vars"].items():
             sys.stdout.write(k + " : ")
             for var in v:
                 sys.stdout.write(var["name"] + ", ")
             print()
-        print("Available functions")
+        print("Available functions:")
         for f in block["funcs"]:
             sys.stdout.write(f["name"] + ", ")
-        print("\n\n")
+        print("\n")
 
 def pretty_print_functions(functions):
     for func in functions:
@@ -242,8 +251,11 @@ def pretty_print_functions(functions):
         print()
 
 def pretty_print_contracts(contracts):
-	for contract in contracts:
-		print(contract["name"])
+    print("Contracts:")
+    for contract in contracts:
+        print(contract["name"])
+
+    print("")
 
 def run_ast_walker(ast_file):
     """ 
@@ -259,7 +271,7 @@ def run_ast_walker(ast_file):
 
     blocks = parse_contracts(contracts)
     
-    # pretty_print_blocks(blocks)
+    #pretty_print_blocks(blocks)
    
     return blocks
     

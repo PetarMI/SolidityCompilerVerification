@@ -26,7 +26,7 @@ class Mutator():
                 # extract the mutated code and where it should be written
                 code = mutation["code"]
                 offset = mutation["offset"]
-                print(offset)
+                
                 pointer = f.tell()
                 code_block = f.read(offset - pointer)
                 mutated_contract += code_block
@@ -55,21 +55,20 @@ class Mutator():
         mutations = []
 
         for block in blocks:
-            src = []
             code = ""
-            mutation = {}
+            offset = 0
+            src = aparse.get_source(block)
 
             # do we change the if condition or insert dead code
-            if (decision()):
-                src = aparse.get_source(block, "condition")
+            if (block.get("if", None)):
                 # generate a tautology for this if statement condition
-                code = (self.gen_code(block, "tautology"))
+                code = t_gen.run_generator(block, self.expr_depth)
+                offset = src["offset"] + src["length"]
             else:
-                src = aparse.get_source(block, "body")
                 # generate a tautology for this if statement condition
-                code = (self.gen_code(block, "dead code"))
-            
-            offset = src["offset"] + src["length"]
+                code = dc_gen.run_generator(block, self.expr_depth)
+                offset = src["offset"]
+
             mutation = { "code" : code,
                          "offset" : offset }
 
@@ -77,20 +76,19 @@ class Mutator():
 
         return self.sort_mutations(mutations)
 
-    def gen_code(self, block, stat_type):
+    def gen_code(self, block):
         """ Generate either a tautology or dead code block to insert into contract
             Uses external modules tautology_generator or dead_generator 
             
             @param: block The if statement we are mutating
-            @param: stat_type Indicating if we want a tautology inside condition or a dead block after
 
             Returns:
                 code : string containing the code block
         """
-        if(stat_type == "tautology"):
+        if(block.get("if"), None):
             """ External function to generate the tautology we will insert in the if condition """
             code = t_gen.run_generator(block, self.expr_depth)
-        elif (stat_type == "dead code"):
+        elif (block.get("return")):
             code = dc_gen.run_generator(block, self.expr_depth)
         else:
             raise KeyError("Attempting to generate unknown block in Mutator")
