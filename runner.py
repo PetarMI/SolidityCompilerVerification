@@ -28,9 +28,9 @@ def run_gen_sep():
     for b in blocks:
         scope_vars = b["scope_vars"]
         funcs_no_rec = [f for f in functions if f["name"] != b["func_name"]]
-        print("if statement in function {0}".format(b["func_name"]))
+        #print("if statement in function {0}".format(b["func_name"]))
         expr = tautology_generator.run_generator(scope_vars, funcs_no_rec, expr_depth)
-        print(expr)
+        #print(expr)
 
 run_gen_sep()
 
@@ -38,9 +38,9 @@ def run_code_gen_sep():
     for b in blocks:
         scope_vars = b["scope_vars"]
         funcs_no_rec = [f for f in functions if f["name"] != b["func_name"]]
-        print("dead code in function {0}".format(b["func_name"]))
+        #print("dead code in function {0}".format(b["func_name"]))
         expr = dead_generator.run_generator(scope_vars, funcs_no_rec, 2)
-        print(expr)
+        #print(expr)
 
 run_code_gen_sep()
 
