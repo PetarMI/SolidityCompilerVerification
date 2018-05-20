@@ -3,7 +3,7 @@ import ineq_gen
 import function_caller as fc
 
 # leaf_types = ["bool", "int", "uint", "string", "array"]#, "mapping"]
-leaf_types = ["bool"]#, "string", "array"]#, "mapping"]
+leaf_types = ["bool", "string", "array"]#, "mapping"]
 
 all_leaves = {  "bool" : { 
                     True : ["{0} || true", "true || {0}"],

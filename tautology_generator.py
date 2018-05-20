@@ -31,6 +31,12 @@ class Tautology_Generator():
 
         return expr
 
+    def gen_condition(self, bvalue):
+        """ Generate a false expresson which will be inserted in a
+            dead if/while block """
+        expr = self.gen_expr(bvalue, self.depth)
+        return expr
+
     def gen_expr(self, bvalue, depth):
         expr = ""
 

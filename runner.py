@@ -2,6 +2,7 @@ import ast_walker
 import mutator
 import ineq_gen
 import tautology_generator
+import dead_generator
 
 contract_file = "Coin"
 expr_depth = 3
@@ -32,6 +33,16 @@ def run_gen_sep():
         print(expr)
 
 run_gen_sep()
+
+def run_code_gen_sep():
+    for b in blocks:
+        scope_vars = b["scope_vars"]
+        funcs_no_rec = [f for f in functions if f["name"] != b["func_name"]]
+        print("dead code in function {0}".format(b["func_name"]))
+        expr = dead_generator.run_generator(scope_vars, funcs_no_rec, 2)
+        print(expr)
+
+run_code_gen_sep()
 
 mutator.run_mutator(contract_file, blocks, functions, expr_depth)
 
