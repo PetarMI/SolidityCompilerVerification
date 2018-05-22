@@ -2,18 +2,14 @@ import ast_walker
 import mutator
 import ineq_gen
 import tautology_generator
+import dead_generator
+import ast_parser as ap
 
-contract_file = "Coin"
+contract_file = "WhiteList"
 expr_depth = 3
 
-blocks, functions = ast_walker.run_ast_walker(contract_file)
-    
-print("\nFinding variables: ")
-print("{0} if statements".format(len(blocks)))
+blocks = ast_walker.run_ast_walker(contract_file)
 ast_walker.pretty_print_blocks(blocks)
-
-print("\nFinding functions: ")
-ast_walker.pretty_print_functions(functions)
 
 """print("\nRunning inequality generator. OUTPUT:")
 in_eq,var_eq = ineq_gen.run_generator(blocks, True)
@@ -23,15 +19,22 @@ print("With vars:")
 print(var_eq)"""
 
 def run_gen_sep(): 
-    print("\nRunning boolean generator. OUTPUT:")
-    for b in blocks:
-        scope_vars = b["scope_vars"]
-        funcs_no_rec = [f for f in functions if f["name"] != b["func_name"]]
-        print("if statement in function {0}".format(b["func_name"]))
-        expr = tautology_generator.run_generator(scope_vars, funcs_no_rec, expr_depth)
+    if_blocks = ap.get_specific_blocks(blocks, "if")
+    print("Tautologies for {0} if statements".format(len(if_blocks)))
+    for b in if_blocks:
+        expr = tautology_generator.run_generator(b, expr_depth)
         print(expr)
 
-run_gen_sep()
+def run_code_gen_sep():
+    return_blocks = ap.get_specific_blocks(blocks, "return")
+    print("Dead code for {0} return statements".format(len(return_blocks)))
+    for b in return_blocks:
+        expr = dead_generator.run_generator(b, 2)
+        print(expr)
 
-mutator.run_mutator(contract_file, blocks, functions, expr_depth)
+"""run_gen_sep()
+print()
+run_code_gen_sep()"""
+
+mutator.run_mutator(contract_file, blocks, expr_depth)
 

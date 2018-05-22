@@ -18,10 +18,28 @@ supported_types = {
 
 #TODO sort them
 def get_source(block):
-    raw_src = block["if"]["condition"]["src"]
+    """ Get the source of a code block
+
+        @param: block The if statement whose source we want 
+        @param: part Indicator of whether we want the condition or the end of the if statement
+
+        Returns: 
+            { "offset" : x,
+              "length" : y }
+    """
+    raw_src = ""
+
+    if (block.get("if", None)):
+        raw_src = block["if"]["condition"]["src"]
+    elif (block.get("return", None)): 
+        raw_src = block["return"]["src"]
+    else:
+        raise KeyError("Asking for the source of unknown contract block")
 
     split_source = raw_src.split(":")
-    return [int(split_source[0]), int(split_source[1])]
+    
+    return {"offset" : int(split_source[0]), 
+            "length" : int(split_source[1]) }
 
 def extract_var(node):
     """ Get the VariableDeclaration out of a node """
@@ -118,6 +136,18 @@ def parse_composite_types(var, var_type):
             return None
 
     return var_info
+
+def get_specific_blocks(blocks, bl_type):
+    """ Dirty fucntion used only for testing purposes in runner 
+        Return only the if/return blocks
+    """
+    specific_blocks = []
+
+    for b in blocks:
+        if (b.get(bl_type, None)):
+            specific_blocks.append(b)
+
+    return specific_blocks
 
 def infer_type(raw_type):
     return supported_types.get(raw_type, None)

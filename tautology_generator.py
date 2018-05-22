@@ -15,9 +15,9 @@ class Tautology_Generator():
                       {"left_expr" : False, "predicate" : " && ", "right_expr" : False},
                       {"left_expr" : False, "predicate" : " || ", "right_expr" : False}]
 
-    def __init__(self, scope_vars, functions, expr_depth):
-        self.variables = scope_vars
-        self.functions = functions
+    def __init__(self, block, expr_depth):
+        self.variables = block["scope_vars"]
+        self.functions = block["funcs"]
         self.depth = expr_depth
 
     def gen_tautology(self):
@@ -29,6 +29,12 @@ class Tautology_Generator():
         else:
             expr = " || " + self.gen_expr(False, self.depth)
 
+        return expr
+
+    def gen_condition(self, bvalue):
+        """ Generate a false expresson which will be inserted in a
+            dead if/while block """
+        expr = self.gen_expr(bvalue, self.depth)
         return expr
 
     def gen_expr(self, bvalue, depth):
@@ -69,19 +75,20 @@ class Tautology_Generator():
             return " (!" + true_expr + ")"
 
     def gen_leaf(self, bvalue):
+        # pick the leaf type based on available vars and functions
         leaf_T, T_atoms = leaf_gen.pick_leaf(self.variables, self.functions)
-        leaf_expr, var_slots = leaf_gen.get_leaf_skeleton(leaf_T, bvalue)
-
-        atoms = []
 
         #TODO may need different approach
         if (T_atoms):
+            atoms = []
+            leaf_expr, var_slots = leaf_gen.get_leaf_skeleton(leaf_T, bvalue)
+
             for i in range(var_slots):
                 atoms.append(random.choice(T_atoms))
-        else:
-            atoms = [get_literal(bvalue)] * var_slots
 
-        return "(" + leaf_expr.format(*atoms) + ")"
+            return "(" + leaf_expr.format(*atoms) + ")"
+        else:
+            return get_literal(bvalue)
 
 def decision(prob):
     """generate something wih a certain probability"""
@@ -93,8 +100,8 @@ def get_literal(bvalue) -> str:
     else:
         return "false"
 
-def run_generator(contract_vars, functions, depth):
-    t_gen = Tautology_Generator(contract_vars, functions, depth)
+def run_generator(block, depth):
+    t_gen = Tautology_Generator(block, depth)
     expr = t_gen.gen_tautology()
 
     return expr
