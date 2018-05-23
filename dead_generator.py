@@ -13,53 +13,66 @@ class Dead_Generator():
     keywords = { "any" : ["throw", "return"],
                  "loop" : ["break", "continue"] }
 
+    structs = { "if" : "if({0}) {{",
+                "while" : "while({0}) {{",
+                "for" : "for(int {it_name} = {it_val}; {it_name} {sign} {it_stop}; {it_name}{op}) {{" }
+
+    generated_line = "// *** Generated ***"
+
     def __init__(self, block, expr_depth):
         self.block = block
         self.variables = copy.deepcopy(self.block["scope_vars"])
         self.functions = self.block["funcs"]
         self.depth = expr_depth
 
-    def gen_dead_block(self):
+    def gen_dead_block(self, i):
         """ The main function of the dead code generator
+            
+            @param i: Indentation level
 
             Returns:
                 a string to directly place into the contract 
         """
-        expr_frame = ""
+        dead_code = ""
         if (decision(0.5)):
-            expr_frame = self.gen_if_frame(False)
+            dead_code = self.gen_struct("if", False, i)
         else:
-            expr_frame = self.gen_while_frame()
+            dead_code = self.gen_struct("while", False, i)
 
-        expr_body = self.gen_body(4)
+        return dead_code + "\n" + indent("", i)
 
-        dead_code = expr_frame.format(expr_body)
-
-        return dead_code  
-
-    def gen_if_frame(self, bvalue):
-        """ Generate an if statement with a generated condition and a placeholder in the body
+    def gen_struct(self, struct_type, bvalue, i):
+        """ Generate an if/while statement with a generated condition and a statements in the body
             
+            @param struct_value: if or while
             @param bvalue: False when the if is a top - level statement
-                           Can be True if we have an if within a dead block
+                           Can be True if we have an if within a dead block (not implemented)
+            @i: Indentation level
         """
-        if_cond = "\nif({0})"
-        if_body = " {{ \n\t// ***Generated*** \n{0}\n}}\n"
+        if (struct_type not in ["if", "while"]):
+            raise ValueError("Trying to generate something else than if/while")
 
+        struct_cond = self.structs[struct_type]
         cond = self.get_condition(bvalue)
-        if_cond = if_cond.format(cond)
-        if_stat = if_cond + if_body
+        struct_cond = struct_cond.format(cond)
 
-        return if_stat
+        struct_body = indent(self.generated_line, i+1)
+        struct_body = struct_body + "\n" + self.gen_body(4, i+1)
 
-    def gen_while_frame(self):
+        struct = indent(struct_cond, i) + "\n" + struct_body + "\n" + indent("}", i)
+        return struct
+
+    def gen_while_frame(self, i):
         """ Generate a dead top-level while statement skeleton and its false condition """
-        while_cond = "\nwhile({0})"
-        while_body = " {{ " + "\n\t// *** Generated *** \n{0}\n" + "}}\n"
+        while_cond = self.structs["while"]
 
         cond = self.get_condition(False)
         while_cond = while_cond.format(cond)
-        while_stat = while_cond + while_body
+
+        while_body = indent(self.generated_line, i+1)
+        while_body = while_body + self.gen_body(4, i+1)
+
+        while_stat = indent(while_cond, i) + while_body + indent("}", i)
 
         return while_stat
 
@@ -72,39 +85,39 @@ class Dead_Generator():
 
         return cond
 
-    def gen_body(self, n):
+    def gen_body(self, n, i):
         """ Generate the body of a dead code segment 
 
             @param n: The number of statements in the body
 
             Returns:
-                string to insert in a placeholder position
+                list of indented strings to insert in a placeholder position
         """
         code = ""
 
-        for i in range(0, n):
-            stat = self.gen_statement()
+        for c in range(0, n):
+            stat = self.gen_statement(i)
             code = code + stat + "\n"
 
         return code
 
-    def gen_statement(self):
+    def gen_statement(self, i):
         statement_type = random.choice(self.statement_types)
         expr = ""
 
         if (statement_type == "keyword"):
             expr = random.choice(self.keywords["any"])
-            expr = "\t" + expr + ";"
+            expr = indent(expr + ";", i)
         elif (statement_type == "var_decl"):
             var = self.declare_var()
             expr = ast_parser.var_to_string(var)
-            expr = "\t" + expr + ";"
+            expr = indent(expr + ";", i)
         elif (statement_type == "loop"):
-            expr = self.gen_for_loop();
+            expr = self.gen_for_loop(i);
 
         return expr
 
-    def gen_for_loop(self):
+    def gen_for_loop(self, i):
         """ Generate a for loop statement
 
             @param dead: Boolean value that say whether we will execute the for body at all
@@ -113,20 +126,19 @@ class Dead_Generator():
                 code: The code string that will be inserted into the .sol file
         """
         # construct the frame of the for loop
-        for_frame = "\tfor(int {it_name} = {it_val}; {it_name} {sign} {it_stop}; {it_name}{op})"
-        for_body = " {{ \n\t{0} \n\t}}\n"
-
+        for_frame = self.structs["for"]
         for_params = self.gen_for_params()
         for_frame = for_frame.format(**for_params)
 
-        for_stats = self.gen_loop_body(for_params["it_name"])
-        for_body = for_body.format(for_stats)
+        # TODO declare needed arrays here
+        for_body = self.gen_loop_body(for_params["it_name"], i+1)
 
-        for_stat = for_frame + for_body
+        for_stat = indent(for_frame, i) + "\n" + for_body + "\n" + indent("}", i)
         return for_stat
 
         # mapping = self.find_var("mapping")
 
+    #TODO ensure we cant go in there
     def gen_for_params(self):
         """ Generate all placeholders for a for statement 
             
@@ -142,12 +154,12 @@ class Dead_Generator():
 
         return params
 
-    def gen_loop_body(self, it_name):
+    def gen_loop_body(self, it_name, i):
         """ Generate all the statements inside a loop body 
         
             @param it_name: string for the name of the iteration variable
         """
-        return "\t" + random.choice(self.keywords["loop"]) + ";"
+        return indent(random.choice(self.keywords["loop"]) + ";", i)
 
     # @TESTED
     def find_var(self, var_type, **kwargs):
@@ -230,6 +242,17 @@ class Dead_Generator():
         else:
             self.variables[var_type] = [var]
 
+def indent(stat, n):
+    return "\t"*n + stat
+
+def concat_lines(lines):
+    code = ""
+
+    for line in lines:
+        code += line + "\n"
+
+    return code
+
 def decision(prob):
     """generate something wih a certain probability"""
     return (random.random() > prob)
@@ -240,6 +263,6 @@ def get_random_name(length):
 
 def run_generator(block, depth):
     dc_gen = Dead_Generator(block, depth)
-    expr = dc_gen.gen_dead_block()
+    expr = dc_gen.gen_dead_block(2)
 
     return expr
