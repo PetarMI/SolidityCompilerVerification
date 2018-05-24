@@ -1,4 +1,4 @@
-### Solidity Compiler Verification
+# Solidity Compiler Verification
 
 Verify the functionality of the Solidity Contract compiler by generating various code snippets and inserting into certain positions in the code.
 
@@ -16,11 +16,11 @@ Currently the verifier performs:
 python3 runner.py
 ```
 
-# NB: 
+### NB: 
 For later use: The bash script runStuff.sh can call truffle compile on the contracts, and copy the resulting 'json' and 'sol' files to the relevant folders. 
 
 ## Functionalty of the Components
 
-# ineq_gen:
+### ineq_gen:
 Define depth and boolean value to generate inequalities with operations: '{+, -, *, /}' and comparisons '{<, > , >== , <==, ==}'. Randomly makes use of 'uint' and 'int' variables throughout the generated inequalities.
 
