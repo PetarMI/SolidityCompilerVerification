@@ -26,14 +26,14 @@ class Mutator():
                 # extract the mutated code and where it should be written
                 code = mutation["code"]
                 offset = mutation["offset"]
-                
                 pointer = f.tell()
                 code_block = f.read(offset - pointer)
                 mutated_contract += code_block
                 mutated_contract += code
-            
+
             #read rest of file
             mutated_contract += f.read()
+            print(mutated_contract)
 
         self.write_mutant(mutated_contract, n)
 
@@ -62,8 +62,14 @@ class Mutator():
             # do we change the if condition or insert dead code
             if (block.get("if", None)):
                 # generate a tautology for this if statement condition
-                code = t_gen.run_generator(block, self.expr_depth)
-                offset = src["offset"] + src["length"]
+                if(decision()):
+                    #Switch statement order
+                    code = t_gen.run_generator(block, self.expr_depth, True)
+                    offset = src["offset"]
+                else:
+                    #Do not switch statement order
+                    code = t_gen.run_generator(block, self.expr_depth, False)
+                    offset = src["offset"] + src["length"]
             else:
                 # generate a tautology for this if statement condition
                 code = dc_gen.run_generator(block, self.expr_depth)

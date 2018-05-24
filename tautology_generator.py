@@ -20,14 +20,21 @@ class Tautology_Generator():
         self.functions = block["funcs"]
         self.depth = expr_depth
 
-    def gen_tautology(self):
+    def gen_tautology(self, switchStatements):
         expr = ""
 
         # pick whether the outermost predicate is a logical AND or OR
-        if(decision(0.5)):
-            expr = " && " + self.gen_expr(True, self.depth)
+        # param switchStatements indicates whether the order of conditionals is switched
+        if switchStatements:
+            if (decision(0.5)):
+                expr = self.gen_expr(True, self.depth) + " && "
+            else:
+                expr = self.gen_expr(False, self.depth) + " || "
         else:
-            expr = " || " + self.gen_expr(False, self.depth)
+            if(decision(0.5)):
+                expr = " && " +self.gen_expr(True, self.depth)
+            else:
+                expr = " || " + self.gen_expr(False, self.depth)
 
         return expr
 
@@ -100,8 +107,8 @@ def get_literal(bvalue) -> str:
     else:
         return "false"
 
-def run_generator(block, depth):
+def run_generator(block, depth, switchStatements):
     t_gen = Tautology_Generator(block, depth)
-    expr = t_gen.gen_tautology()
+    expr = t_gen.gen_tautology(switchStatements)
 
     return expr
