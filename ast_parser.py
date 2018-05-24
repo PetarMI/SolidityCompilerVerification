@@ -16,6 +16,18 @@ supported_types = {
   "t_array" : "array"
 }
 
+simple_types = ["bool", "int", "uint", "string", "address"]
+
+type_codes = {
+    "bool" : "{type} {name}",
+    "int" : "{type} {name}",
+    "uint" : "{type} {name}",
+    "string" : "{type} {name}",
+    "address" : "{type} {name}",
+    "array" : "{key_type}[] {name}",
+    "mapping" : "{type} ({key_type} => {val_type}) {name}"
+}
+
 #TODO sort them
 def get_source(block):
     """ Get the source of a code block
@@ -55,7 +67,7 @@ def parse_variable(var):
     Example: { "name" : name,
                "type" : type,
                "key_type"  : key_type
-               "value_type" : val_type }
+               "val_type" : val_type }
     In case of an array treat key_type as the type of the elements
     """
     var_info = {}   
@@ -151,3 +163,21 @@ def get_specific_blocks(blocks, bl_type):
 
 def infer_type(raw_type):
     return supported_types.get(raw_type, None)
+
+def var_to_string(var):
+    """ Return the string representation of the dictionary format of a variable 
+
+        @param var: dictionary format of a variable as returned by parse_variable(var)
+
+        Returns:
+            code: String format of the var
+    """
+
+    var_code = type_codes.get(var.get("type", None), None)
+
+    if (not var_code):
+        raise ValueError("Cannot convert variable to string")
+
+    code = var_code.format(**var)
+
+    return code

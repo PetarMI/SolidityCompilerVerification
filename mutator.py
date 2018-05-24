@@ -76,25 +76,6 @@ class Mutator():
 
         return self.sort_mutations(mutations)
 
-    def gen_code(self, block):
-        """ Generate either a tautology or dead code block to insert into contract
-            Uses external modules tautology_generator or dead_generator 
-            
-            @param: block The if statement we are mutating
-
-            Returns:
-                code : string containing the code block
-        """
-        if(block.get("if"), None):
-            """ External function to generate the tautology we will insert in the if condition """
-            code = t_gen.run_generator(block, self.expr_depth)
-        elif (block.get("return")):
-            code = dc_gen.run_generator(block, self.expr_depth)
-        else:
-            raise KeyError("Attempting to generate unknown block in Mutator")
-
-        return code
-
     def sort_mutations(self, mutations):
         """ Sort the mutations by their offset """
         return sorted(mutations, key=operator.itemgetter("offset"))
