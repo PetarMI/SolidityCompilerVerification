@@ -33,7 +33,6 @@ class Mutator():
 
             #read rest of file
             mutated_contract += f.read()
-            print(mutated_contract)
 
         self.write_mutant(mutated_contract, n)
 

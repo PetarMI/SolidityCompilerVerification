@@ -156,7 +156,7 @@ class Dead_Generator():
         if (mapping):
             statements = self.gen_map_loop(mapping, it_name, i)
         else:
-            statements = random.choice(self.keywords["loop"])        
+            statements = [indent(random.choice(self.keywords["loop"]) + ";", i)]        
 
         return concat_lines(statements)
 
