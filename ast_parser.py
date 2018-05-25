@@ -24,7 +24,7 @@ type_codes = {
     "uint" : "{type} {name}",
     "string" : "{type} {name}",
     "address" : "{type} {name}",
-    "array" : "{key_type}[] {name}",
+    "array" : "{key_type}[] memory {name}",
     "mapping" : "{type} ({key_type} => {val_type}) {name}"
 }
 

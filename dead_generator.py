@@ -1,6 +1,7 @@
 import random
 import string
 import tautology_generator as t_gen
+import operator_generator as op_gen
 import ast_parser
 import copy
 
@@ -15,7 +16,11 @@ class Dead_Generator():
 
     structs = { "if" : "if({0}) {{",
                 "while" : "while({0}) {{",
-                "for" : "for(int {it_name} = {it_val}; {it_name} {sign} {it_stop}; {it_name}{op}) {{" }
+                "for" : "for(uint {it_name} = {it_val}; {it_name} {sign} {it_stop}; {it_name}{op}) {{" }
+
+    init_stats = { "init_arr" : "{arr_name} = new {arr_type}[]({n})",
+                   "assign_to_arr" : "{var_name} = {arr_name}[{index}]", 
+                   "map_assign" : "{map_name}[{index}] = {op}" }
 
     generated_line = "// *** Generated ***"
 
@@ -62,20 +67,6 @@ class Dead_Generator():
         struct = indent(struct_cond, i) + "\n" + struct_body + "\n" + indent("}", i)
         return struct
 
-    def gen_while_frame(self, i):
-        """ Generate a dead top-level while statement skeleton and its false condition """
-        while_cond = self.structs["while"]
-
-        cond = self.get_condition(False)
-        while_cond = while_cond.format(cond)
-
-        while_body = indent(self.generated_line, i+1)
-        while_body = while_body + self.gen_body(4, i+1)
-
-        while_stat = indent(while_cond, i) + while_body + indent("}", i)
-
-        return while_stat
-
     def get_condition(self, bvalue):
         """ Generate a false statement to insert in the if/while condition block
             Call the external module Tautology_Generator for that
@@ -93,12 +84,12 @@ class Dead_Generator():
             Returns:
                 list of indented strings to insert in a placeholder position
         """
-        code = ""
+        statements = []
 
         for c in range(0, n):
-            stat = self.gen_statement(i)
-            code = code + stat + "\n"
+            statements.append(self.gen_statement(i))
 
+        code = concat_lines(statements)
         return code
 
     def gen_statement(self, i):
@@ -136,8 +127,6 @@ class Dead_Generator():
         for_stat = indent(for_frame, i) + "\n" + for_body + "\n" + indent("}", i)
         return for_stat
 
-        # mapping = self.find_var("mapping")
-
     #TODO ensure we cant go in there
     def gen_for_params(self):
         """ Generate all placeholders for a for statement 
@@ -149,17 +138,71 @@ class Dead_Generator():
         params["it_name"] = get_random_name(2)
         params["it_val"] = random.randint(0, 50)
         params["sign"] = random.choice([">", "<", ">=", "<="])
-        params["it_stop"] = random.randint(-50, 50)
+        params["it_stop"] = random.randint(0, 50)
         params["op"] = random.choice(["++", "--"])
 
         return params
 
     def gen_loop_body(self, it_name, i):
         """ Generate all the statements inside a loop body 
-        
+        	The point is to operate on every element of a mapping and an array
+
             @param it_name: string for the name of the iteration variable
         """
-        return indent(random.choice(self.keywords["loop"]) + ";", i)
+        statements = []
+
+        # find a mapping to operate on
+        mapping = self.find_var("mapping")
+        if (mapping):
+            statements = self.gen_map_loop(mapping, it_name, i)
+        else:
+            statements = random.choice(self.keywords["loop"])        
+
+        return concat_lines(statements)
+
+    def gen_map_loop(self, mapping, it_name, i):
+        statements = []
+
+        map_key_type = mapping["key_type"]
+        map_val_type = mapping["val_type"]
+
+        # find a key array
+        kwargs = { "key_type" : map_key_type }
+        key_arr = self.find_var("array", **kwargs)
+
+        # if we don't have an array for the key type, generate one
+        if (key_arr == None):
+            kwargs = { "name" : get_random_name(6), "type" : "array", "key_type" : map_key_type }
+            key_arr, stats = self.new_var(i, **kwargs)
+            statements.extend(stats)
+
+        # key variable declaration
+        kwargs = { "name" : get_random_name(6), "type" : map_key_type, "init_name" : key_arr["name"], "index" : it_name}
+        key_el, stats = self.new_var(i, **kwargs)
+        statements.extend(stats)
+
+        # map array 
+        kwargs = { "key_type" : map_val_type}
+        val_arr = self.find_var("array", **kwargs)
+
+        if (val_arr == None):
+            kwargs = { "type" : "array", "key_type" : map_val_type}
+            val_arr, stats = self.new_var(i, **kwargs)
+            statements.extend(stats)
+
+        # value variable declaration
+        kwargs = { "name" : get_random_name(6), "type" : map_val_type, "init_name" : val_arr["name"], "index" : it_name}
+        val_el, stats = self.new_var(i, **kwargs)
+        statements.extend(stats)
+
+        # do the operation
+        op = op_gen.get_op(map_val_type, self.variables)
+        kwargs = {"index" : key_el["name"], "op" : op}
+        map_op = self.assign_var(mapping, **kwargs)
+
+        statements.append(indent(map_op + ";", i))
+
+        return statements
 
     # @TESTED
     def find_var(self, var_type, **kwargs):
@@ -198,9 +241,36 @@ class Dead_Generator():
         var = random.choice(matching_vars)
         return var
 
+    def new_var(self, i, **kwargs):
+        """ Function to declare and initialize a new variable
+            Basically a wrapper around declare_var and assign_var
+        
+            @param kwargs: everything needed for the new var. If None provided get a random var
+
+            Returns:
+                var: the new variable in dict format
+                statements: the list of statements that need to be inserted in the code
+        """
+        statements = []
+
+        n_var = self.declare_var(**kwargs)
+        statements.append(indent(ast_parser.var_to_string(n_var) + ";", i))
+
+        # build he kwargs for the initialization part
+        if (kwargs.get("init_name", None)):
+            n_var_init = self.assign_var(n_var, **kwargs)
+        else:
+            n_var_init = self.assign_var(n_var)
+        statements.append(indent(n_var_init + ";", i))
+
+        return n_var, statements
+
     # @TESTED
+    # TODO This would have been better with *args and not **kwargs
     def declare_var(self, **kwargs):
         """ Generate a random variable in the dead code 
+            
+            @param kwargs: name, type and key_type
 
             Returns:
                 var: The dictionary format of a variable
@@ -211,6 +281,10 @@ class Dead_Generator():
 
         # do we want a specific variable
         if(kwargs):
+            var_name = kwargs.get("name", None)
+            if (var_name):
+                var["name"] = var_name
+
             var_T = kwargs.get("type", None)
             if (not var_T):
                 raise ValueError("Bad type provided when declaring variable")
@@ -222,7 +296,7 @@ class Dead_Generator():
             if (key_type):
                 var["key_type"] = key_type
 
-            self.save_var(var)
+            # self.save_var(var)
             return var
 
         # random chance of creating an array if no specific type provided in kwargs
@@ -230,8 +304,42 @@ class Dead_Generator():
             var["type"] = "array"
             var["key_type"] = random.choice(self.var_types)
 
-        self.save_var(var)
+        # self.save_var(var)
         return var
+
+    def assign_var(self, var, **kwargs):
+        """ Perform a variable assignment
+            If it is an array we initialize it to a new array
+            If it is a mapping we assign the key to some new value
+            If it is neither the var gets assigned to an element from an array specified in kwargs
+            
+            @param var: The variable to init
+            @param kwargs: When we want to init to sth specific
+                           init_name, index, op
+
+            Returns:
+                The string to be inserted in the code for the assignment
+        """
+        var_assign = ""
+        var_name = var["name"]
+
+        if (var["type"] == "array"):
+            n = random.randint(1, 100)
+            var_assign = self.init_stats["init_arr"]
+            fargs = {"arr_name" : var_name, "arr_type" : var["key_type"], "n" : n}
+        elif (var["type"] == "mapping"):
+            var_assign = self.init_stats["map_assign"]
+            fargs = {"map_name" : var_name, "index" : kwargs["index"], "op" : kwargs["op"]}
+        elif (kwargs):
+            # most general case where we are assigning whatever to something specific
+            var_assign = self.init_stats["assign_to_arr"]
+            fargs = {"var_name" : var_name, "arr_name" : kwargs["init_name"], "index" : kwargs["index"]}
+ 
+        else:
+            raise ValueError("Failed to assign a variable")
+
+        var_assign = var_assign.format(**fargs)
+        return var_assign
 
     # @TESTED
     def save_var(self, var):
