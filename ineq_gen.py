@@ -12,9 +12,9 @@ class Ineq_Generator():
         self.variabs = variabs
         self.placeholderVar = placeholderVal
         self.leaf_T = leaf_T
-    def gen_eq(self, type):
+    def gen_eq(self, var_type):
         '''generate an equation using one of the ops'''
-        if type is "integers":
+        if var_type is "integers":
             eq = ""
             eq_depth = random.randint(1, 2)
             first = 1
@@ -23,14 +23,30 @@ class Ineq_Generator():
                 eq_depth -= 1
                 num1 = self.nums[random.randint(0, self.nums_length - 1)]
                 num2 = self.nums[random.randint(0, self.nums_length - 1)]
+                op1 =  self.ops_str[random.randint(0, 3)]
+                op2 =  self.ops_str[random.randint(0, 1)]
+                op3 =  self.ops_str[random.randint(0, 3)]
+
+                if num2 > num1:
+                    tmp = num2
+                    num2 = num1
+                    num1 = tmp
+
+                if not (num1 % num2 == 0):
+                    num1 = num2*random.randint(2, 5)
 
                 if first:
-                    eq += str(num1) + " " + self.ops_str[random.randint(0, 3)] + " " + str(num2)
+                    eq += "(" + str(num1) + " " + op1 + " " + str(num2) + ")"
                     first -= 1
                 else:
-                    eq += " " + self.ops_str[random.randint(0, 3)] + " " + str(num1) + " " + self.ops_str[
-                        random.randint(0, 3)] + " " + str(num2)
+                    eq += " " + op2 + " (" + str(num1) + " " + op3 + " " + str(num2) + ")"
             val = eval(eq)
+            #print(num1)
+            #print(num2)
+            #print("type")
+            #print(self.leaf_T)
+            #print("val:")
+            #print(val)
             return eq, val
         else:
             variables = []
@@ -49,13 +65,13 @@ class Ineq_Generator():
     def gen_inequality(self, args):
         bool = args[0]
         depth = args[3]
-        type = args[4]
+        var_type = args[4]
 
         '''generates the inequality itself'''
         while depth > 0:
             depth -= 1
 
-            if type == "integers":
+            if var_type == "integers":
                 symbols_str = self.symbols_str_int[0:3]
                 length_sym = len(symbols_str)
                 symbol = symbols_str[random.randint(0, length_sym-1)]
@@ -68,12 +84,12 @@ class Ineq_Generator():
                 length_sym = len(symbols_str)
                 symbol = symbols_str[random.randint(0, length_sym - 1)]
 
-            if type == "integers":
-                eq1, val_eq1 = self.gen_eq(type)
-                eq2, val_eq2 = self.gen_eq(type)
+            if var_type == "integers":
+                eq1, val_eq1 = self.gen_eq(var_type)
+                eq2, val_eq2 = self.gen_eq(var_type)
                 res = self.symbols[symbol](val_eq1, val_eq2)
             else:
-                variabs = self.gen_eq(type)
+                variabs = self.gen_eq(var_type)
                 eq1 = variabs[random.randint(0, len(variabs)-1)]
                 eq2 = eq1
                 res = bool
@@ -160,7 +176,7 @@ def run_generator(varExists, bool, leaf_T):
     symbols_str_int = ['<', '>', '>=', '<=', '==']
     types = ["integers", "variables"]
     symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y), "<=": (lambda x, y: x <= y)}
-    ops_str = ['+', '-', '/', '*']
+    ops_str = ['+', '*','-', '/' ]
     nums = []
     #bool = decision(0.5)
 
@@ -170,24 +186,24 @@ def run_generator(varExists, bool, leaf_T):
         if leaf_T == "uint":
             nums.append(random.randint(0, 100000))
         else:
-            nums.append(random.randint(-100000, 100000))
+            nums.append(random.randint(0, 100000))
     l = len(nums)
 
     generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, varExists, 0, leaf_T)
 
     if (varExists) :
-        type = random.choice(types)
+        var_type = random.choice(types)
         #expr_var = generatorInt.var_with_expression(bool)
         #print(expr_var)
     else:
-        type = "integers"
+        var_type = "integers"
 
 
     if bool:
-        intExpr = generatorInt.gen_tautology([True, 2, "", 1, type])
+        intExpr = generatorInt.gen_tautology([True, 2, "", 1, var_type])
         #intExpr = "and " + intExpr
     else:
-        intExpr = generatorInt.gen_tautology([False, 2, "", 1, type])
+        intExpr = generatorInt.gen_tautology([False, 2, "", 1, var_type])
         #intExpr = "or " + intExpr
 
     return intExpr, generatorInt.placeholderVar # expr_var
