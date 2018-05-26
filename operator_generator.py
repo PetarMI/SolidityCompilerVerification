@@ -7,7 +7,31 @@ ops = { "bool" : { "!" : "unary",
 				   "&&" : "binary", 
 				   "||" : "binary",
 				   "==" : "binary",
-				   "!=" : "binary" } }
+				   "!=" : "binary" },
+
+		"uint" : { "~" : "unary",
+				   "unary-" : "unary",
+				   "-" : "binary",
+				   "+" : "binary",
+				   "/" : "binary",
+				   "*" : "binary",
+				   "&" : "binary",
+				   "|" : "binary",
+				   "^" : "binary",
+                   ">>": "binary",
+                   "<<":"binary"},
+
+        "int": { "~": "unary",
+                 "unary-": "unary",
+                 "-": "binary",
+                 "+": "binary",
+                 "/": "binary",
+                 "*": "binary",
+                 "&": "binary",
+                 "|": "binary",
+                 "^": "binary",
+                 ">>": "binary",
+                 "<<":"binary"}}
 
 def get_op(var, variables):
     type_ops = ops[var["type"]]
@@ -16,6 +40,9 @@ def get_op(var, variables):
     	return var["name"]
 
     operator, op_type = random.choice(list(type_ops.items()))
+
+    if (operator == "unary-"):
+		operator = "-"
 
     if (op_type == "unary"):
     	fargs = {"op" : operator, "var" : var["name"]}
