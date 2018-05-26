@@ -5,7 +5,7 @@ import tautology_generator
 import dead_generator
 import ast_parser as ap
 
-contract_file = "Coin"
+contract_file = "WhiteList"
 expr_depth = 3
 
 blocks = ast_walker.run_ast_walker(contract_file)

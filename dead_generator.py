@@ -156,6 +156,7 @@ class Dead_Generator():
         if (mapping):
             statements = self.gen_map_loop(mapping, it_name, i)
         else:
+            print("No mapping found")
             statements = [indent(random.choice(self.keywords["loop"]) + ";", i)]        
 
         return concat_lines(statements)
@@ -196,7 +197,7 @@ class Dead_Generator():
         statements.extend(stats)
 
         # do the operation
-        op = op_gen.get_op(map_val_type, self.variables)
+        op = op_gen.get_op(val_el, self.variables)
         kwargs = {"index" : key_el["name"], "op" : op}
         map_op = self.assign_var(mapping, **kwargs)
 
@@ -208,7 +209,7 @@ class Dead_Generator():
     def find_var(self, var_type, **kwargs):
         """ Check and return an inscope variable of the specified type
 
-            @param var_type: variable type we are searchign for
+            @param var_type: variable type we are searching for
             @kwargs: in case we are searching for an array or mapping we can specify the composite types
 
             Returns:
