@@ -58,7 +58,7 @@ def pick_leaf(variables, functions):
     for i in range(1, 10):
         leaf_T = random.choice(leaf_types)
         # get all variables of this type (list comprehesnion to get just the names)
-        available_vars = variables.get(leaf_T, None)
+        available_vars = variables.get(leaf_T, None, leaf_T)
 
         T_vars = []
         if (available_vars):
