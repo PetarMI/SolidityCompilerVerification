@@ -9,7 +9,7 @@ class Dead_Generator():
 
     var_types = ["bool", "uint", "int", "string"]
 
-    statement_types = ["keyword", "var_decl", "loop"]
+    statement_types = ["keyword", "var_decl"]
 
     keywords = { "any" : ["throw", "return"],
                  "loop" : ["break", "continue"] }
@@ -86,8 +86,11 @@ class Dead_Generator():
         """
         statements = []
 
-        for c in range(0, n):
+        for c in range(0, n - 1):
             statements.append(self.gen_statement(i))
+
+        # generate one for loop because of variable declaration restriction
+        statements.append(self.gen_for_loop(i))
 
         code = concat_lines(statements)
         return code
@@ -103,8 +106,6 @@ class Dead_Generator():
             var = self.declare_var()
             expr = ast_parser.var_to_string(var)
             expr = indent(expr + ";", i)
-        elif (statement_type == "loop"):
-            expr = self.gen_for_loop(i);
 
         return expr
 
@@ -121,13 +122,12 @@ class Dead_Generator():
         for_params = self.gen_for_params()
         for_frame = for_frame.format(**for_params)
 
-        # TODO declare needed arrays here
         for_body = self.gen_loop_body(for_params["it_name"], i+1)
 
         for_stat = indent(for_frame, i) + "\n" + for_body + "\n" + indent("}", i)
         return for_stat
 
-    #TODO ensure we cant go in there
+    # TODO ensure we cant go in there?
     def gen_for_params(self):
         """ Generate all placeholders for a for statement 
             
@@ -145,7 +145,7 @@ class Dead_Generator():
 
     def gen_loop_body(self, it_name, i):
         """ Generate all the statements inside a loop body 
-        	The point is to operate on every element of a mapping and an array
+            The point is to operate on every element of a mapping and an array
 
             @param it_name: string for the name of the iteration variable
         """
