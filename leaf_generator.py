@@ -31,7 +31,7 @@ def get_leaf_skeleton(leaf_T, bvalue):
     leaves = all_leaves.get(leaf_T, None)
 
     if leaf_T == "uint" or leaf_T == "int":
-        expr, var_slots = ineq_gen.run_generator(True, bvalue)
+        expr, var_slots = ineq_gen.run_generator(True, bvalue, leaf_T)
         return expr, var_slots
 
     # sanity check
@@ -58,7 +58,7 @@ def pick_leaf(variables, functions):
     for i in range(1, 10):
         leaf_T = random.choice(leaf_types)
         # get all variables of this type (list comprehesnion to get just the names)
-        available_vars = variables.get(leaf_T, None, leaf_T)
+        available_vars = variables.get(leaf_T, None)
 
         T_vars = []
         if (available_vars):
