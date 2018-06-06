@@ -12,6 +12,7 @@ class Ineq_Generator():
         self.variabs = variabs
         self.placeholderVar = placeholderVal
         self.leaf_T = leaf_T
+
     def gen_eq(self, var_type):
         '''generate an equation using one of the ops'''
         if var_type is "integers":
@@ -27,6 +28,7 @@ class Ineq_Generator():
                 op2 =  self.ops_str[random.randint(0, 1)]
                 op3 =  self.ops_str[random.randint(0, 3)]
 
+                # Small modifications to make sure solc compiler doesn't complain (int > -int compilation issue)
                 if num2 > num1:
                     tmp = num2
                     num2 = num1
@@ -41,33 +43,20 @@ class Ineq_Generator():
                 else:
                     eq += " " + op2 + " (" + str(num1) + " " + op3 + " " + str(num2) + ")"
             val = eval(eq)
-            #print(num1)
-            #print(num2)
-            #print("type")
-            #print(self.leaf_T)
-            #print("val:")
-            #print(val)
             return eq, val
         else:
-            variables = []
-
-            #if ("uint" in self.variabs.keys()):
-             #   for variable in self.variabs['uint']:
-              #      variables.append(variable['name'])
-            #if ("int" in self.variabs.keys()):
-             #   for variable in self.variabs['int']:
-              #      variables.append(variable['name'])
             temp = self.placeholderVar
             self.placeholderVar += 1
             retVal = "{" + str(temp) + "}"
             return [retVal]
 
     def gen_inequality(self, args):
+        '''Creates and inequality'''
+
         bool = args[0]
         depth = args[3]
         var_type = args[4]
 
-        '''generates the inequality itself'''
         while depth > 0:
             depth -= 1
 
@@ -106,21 +95,14 @@ class Ineq_Generator():
                     return eq1 + " " + symbol + " " + eq2
 
     def var_with_expression(self, args):
-        vars = []
+        '''Creates an expression containing variables'''
+
         eq1, val1 = self.gen_eq("integers")
         eq2, val2 = self.gen_eq("integers")
         bool = args[0]
-        #print(self.variabs.keys())
-        #if ("uint" in self.variabs.keys()):
-         #   for variable in self.variabs['uint']:
-          #      vars.append(variable['name'])
-        #if ("int" in self.variabs.keys()):
-         #   for variable in self.variabs['int']:
-          #      vars.append(variable['name'])
 
         var = "{" + str(self.placeholderVar) + "}"
         self.placeholderVar += 1
-            #random.choice(vars)
 
         if bool:
             op = random.choice(self.ops_str)
@@ -133,14 +115,14 @@ class Ineq_Generator():
 
 
     def gen_tautology(self, args):
+        '''Generates the tautology containing various inequalities and equations with depth tot_depth and evaluates to bool'''
         bool = args[0]
         args[1] -=  1
         tot_depth = args[1]
-        expr = args[2]
         curr_type = args[4]
         depth = random.randint(1, 2)
         args[3] = depth
-        #if all (k in self.variabs.keys() for k in ("uint","int")):
+
         if self.variabs:
             func_list = [self.gen_tautology, self.gen_inequality, self.var_with_expression]
         else:
@@ -149,7 +131,7 @@ class Ineq_Generator():
         pred_list = [" && ", " || "]
         types = ["integers", "variables"]
 
-        #if ("uint" in self.variabs.keys() or "int" in self.variabs.keys()) :
+        # Set type of tautology, if variables==True, use the given variables
         if self.variabs:
             args[4] = random.choice(types)
         else:
@@ -178,32 +160,24 @@ def run_generator(varExists, bool, leaf_T):
     symbols = {"<": (lambda x, y: x < y), ">": (lambda x, y: x > y), ">=": (lambda x, y: x >= y), "<=": (lambda x, y: x <= y)}
     ops_str = ['+', '*','-', '/' ]
     nums = []
-    #bool = decision(0.5)
 
-
-
+    #The values to be used in the expressions
     for i in range(10):
-        if leaf_T == "uint":
-            nums.append(random.randint(0, 100000))
-        else:
-            nums.append(random.randint(0, 100000))
+        nums.append(random.randint(0, 100000))
+
     l = len(nums)
 
     generatorInt  = Ineq_Generator(symbols_str_int, symbols, ops_str, nums, l, varExists, 0, leaf_T)
 
     if (varExists) :
         var_type = random.choice(types)
-        #expr_var = generatorInt.var_with_expression(bool)
-        #print(expr_var)
     else:
         var_type = "integers"
 
-
+    # Generate tautology that evaluates to bool
     if bool:
         intExpr = generatorInt.gen_tautology([True, 2, "", 1, var_type])
-        #intExpr = "and " + intExpr
     else:
         intExpr = generatorInt.gen_tautology([False, 2, "", 1, var_type])
-        #intExpr = "or " + intExpr
 
-    return intExpr, generatorInt.placeholderVar # expr_var
+    return intExpr, generatorInt.placeholderVar
