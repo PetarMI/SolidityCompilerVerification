@@ -138,7 +138,7 @@ class Ineq_Generator():
         tot_depth = args[1]
         expr = args[2]
         curr_type = args[4]
-        depth = random.randint(1, 3)
+        depth = random.randint(1, 2)
         args[3] = depth
         #if all (k in self.variabs.keys() for k in ("uint","int")):
         if self.variabs:
