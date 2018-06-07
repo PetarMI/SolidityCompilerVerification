@@ -62,11 +62,11 @@ class Mutator():
             if (block.get("if", None)):
                 # generate a tautology for this if statement condition
                 if(decision()):
-                    #Switch statement order
+                    # Switch statement order
                     code = t_gen.run_generator(block, self.expr_depth, True)
                     offset = src["offset"]
                 else:
-                    #Do not switch statement order
+                    # Do not switch statement order
                     code = t_gen.run_generator(block, self.expr_depth, False)
                     offset = src["offset"] + src["length"]
             else:
